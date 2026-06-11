@@ -1016,37 +1016,29 @@ function AdminDashboardContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 p-5 fixed h-full z-30 shadow-sm">
+      {/* Desktop Sidebar — fixed, visible md+ */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 p-5 fixed top-0 left-0 h-full z-30 shadow-sm">
         <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-lg">F</div>
-          <div>
-            <h1 className="font-serif font-bold text-base text-primary leading-none">Forth</h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Admin Panel</p>
+          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-lg shrink-0">F</div>
+          <div className="min-w-0">
+            <h1 className="font-serif font-bold text-sm text-primary leading-none">FORTH ARCHITECTURE</h1>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Admin Panel</p>
           </div>
         </div>
         <SidebarContent />
       </aside>
 
-      {/* Mobile Header */}
-      <header className="md:hidden bg-white border-b border-slate-100 p-4 flex items-center justify-between sticky top-0 z-40 shadow-sm w-full">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary">F</div>
-          <h1 className="font-serif font-bold text-lg text-primary">Admin Panel</h1>
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => setIsMobileSidebarOpen(true)}>
-          <Menu size={20} />
-        </Button>
-      </header>
-
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar overlay */}
       {isMobileSidebarOpen && (
         <div className="md:hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm" onClick={closeSidebar}>
-          <aside className="w-64 bg-white h-full p-5 flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <aside className="w-72 bg-white h-full p-5 flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary">F</div>
-                <h1 className="font-serif font-bold text-lg text-primary">Admin Panel</h1>
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary shrink-0">F</div>
+                <div>
+                  <h1 className="font-serif font-bold text-sm text-primary leading-none">FORTH ARCHITECTURE</h1>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Admin Panel</p>
+                </div>
               </div>
               <Button variant="ghost" size="icon" onClick={closeSidebar}><X size={18} /></Button>
             </div>
@@ -1055,22 +1047,39 @@ function AdminDashboardContent() {
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="flex-grow md:ml-64 min-h-screen">
-        <div className="p-5 md:p-8 max-w-6xl mx-auto">
-          <Switch>
-            <Route path="/admin" component={DashboardOverview} />
-            <Route path="/admin/projects" component={ProjectsManagement} />
-            <Route path="/admin/gallery" component={GalleryManagement} />
-            <Route path="/admin/team" component={TeamManagement} />
-            <Route path="/admin/services" component={ServicesManagement} />
-            <Route path="/admin/social" component={SocialLinksManagement} />
-            <Route path="/admin/company" component={CompanyInfoManagement} />
-            <Route path="/admin/messages" component={MessagesInbox} />
-            <Route component={() => <Redirect to="/admin" />} />
-          </Switch>
-        </div>
-      </main>
+      {/* Right column: mobile header + main */}
+      <div className="flex flex-col flex-grow md:ml-64 min-h-screen min-w-0">
+        {/* Mobile Header */}
+        <header className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary shrink-0">F</div>
+            <div>
+              <h1 className="font-serif font-bold text-sm text-primary leading-none">FORTH ARCHITECTURE</h1>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Admin Panel</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileSidebarOpen(true)}>
+            <Menu size={20} />
+          </Button>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-grow w-full">
+          <div className="p-4 md:p-8 max-w-6xl mx-auto">
+            <Switch>
+              <Route path="/admin" component={DashboardOverview} />
+              <Route path="/admin/projects" component={ProjectsManagement} />
+              <Route path="/admin/gallery" component={GalleryManagement} />
+              <Route path="/admin/team" component={TeamManagement} />
+              <Route path="/admin/services" component={ServicesManagement} />
+              <Route path="/admin/social" component={SocialLinksManagement} />
+              <Route path="/admin/company" component={CompanyInfoManagement} />
+              <Route path="/admin/messages" component={MessagesInbox} />
+              <Route component={() => <Redirect to="/admin" />} />
+            </Switch>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

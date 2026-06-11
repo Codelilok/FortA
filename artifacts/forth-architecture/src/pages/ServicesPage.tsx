@@ -19,6 +19,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "wouter";
 
 export default function ServicesPage() {
   const { data: services, isLoading } = useListServices();
@@ -73,30 +74,33 @@ export default function ServicesPage() {
             ) : (
               services?.map((service, index) => {
                 const Icon = serviceIcons[service.icon] || serviceIcons[service.icon.toLowerCase()] || Building2;
+                const contactUrl = `/contact?service=${encodeURIComponent(service.title)}`;
                 return (
                   <FadeIn key={service.id} delay={index * 0.05}>
-                    <motion.div 
-                      whileHover={{ y: -10 }}
-                      className="group p-12 bg-white border border-border rounded-2xl h-full flex flex-col items-start transition-all duration-300 hover:border-secondary hover:shadow-2xl relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-16 -mt-16 group-hover:bg-secondary/20 transition-all duration-500" />
-                      
-                      <div className="mb-8 p-5 bg-gray-50 rounded-2xl group-hover:bg-secondary/10 transition-colors relative z-10">
-                        <Icon className="w-12 h-12 text-primary group-hover:text-secondary transition-colors" />
-                      </div>
-                      
-                      <h3 className="text-2xl font-serif font-bold text-primary mb-6 relative z-10">
-                        {service.title}
-                      </h3>
-                      
-                      <p className="text-muted-foreground leading-relaxed mb-8 flex-grow relative z-10">
-                        {service.description}
-                      </p>
-                      
-                      <div className="flex items-center gap-2 text-primary font-bold group-hover:text-secondary transition-colors relative z-10">
-                        Discuss this service <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </motion.div>
+                    <Link href={contactUrl} className="block h-full">
+                      <motion.div 
+                        whileHover={{ y: -10 }}
+                        className="group p-10 bg-white border border-border rounded-2xl h-full flex flex-col items-start transition-all duration-300 hover:border-secondary hover:shadow-2xl relative overflow-hidden cursor-pointer"
+                      >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-16 -mt-16 group-hover:bg-secondary/20 transition-all duration-500" />
+                        
+                        <div className="mb-8 p-5 bg-gray-50 rounded-2xl group-hover:bg-secondary/10 transition-colors relative z-10">
+                          <Icon className="w-12 h-12 text-primary group-hover:text-secondary transition-colors" />
+                        </div>
+                        
+                        <h3 className="text-2xl font-serif font-bold text-primary mb-6 relative z-10">
+                          {service.title}
+                        </h3>
+                        
+                        <p className="text-muted-foreground leading-relaxed mb-8 flex-grow relative z-10">
+                          {service.description}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 text-primary font-bold group-hover:text-secondary transition-colors relative z-10">
+                          Discuss this service <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </motion.div>
+                    </Link>
                   </FadeIn>
                 );
               })

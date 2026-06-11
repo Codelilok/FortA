@@ -29,11 +29,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Brand */}
           <div className="space-y-6">
-            <Link href="/" className="flex items-center gap-2 group">
-              <img src="/logo.svg" alt="Logo" className="h-12 w-auto brightness-0 invert" />
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center font-serif font-black text-primary text-xl shrink-0">F</div>
               <div className="flex flex-col">
-                <span className="font-serif font-bold text-xl leading-tight">FORTH</span>
-                <span className="text-[10px] tracking-widest uppercase text-white/60">Architecture</span>
+                <span className="font-serif font-bold text-base leading-tight tracking-wide">FORTH ARCHITECTURE</span>
+                <span className="text-[10px] tracking-widest uppercase text-white/60">Consulting &amp; Construction Ltd</span>
               </div>
             </Link>
             <p className="text-white/70 max-w-xs leading-relaxed">

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useSearch } from "wouter";
 import { 
   Form, 
   FormControl, 
@@ -41,6 +42,8 @@ export default function ContactPage() {
   const { toast } = useToast();
   const { data: company } = useGetCompanyInfo();
   const submitContact = useSubmitContact();
+  const search = useSearch();
+  const serviceParam = new URLSearchParams(search).get("service");
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -48,8 +51,8 @@ export default function ContactPage() {
       name: "",
       email: "",
       phone: "",
-      subject: "",
-      message: "",
+      subject: serviceParam ? `Inquiry about: ${serviceParam}` : "",
+      message: serviceParam ? `I'd like to discuss your ${serviceParam} service.` : "",
     },
   });
 
