@@ -3,20 +3,38 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Forth Architecture Consulting & Construction Ltd API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: projects
+    description: Project management
+  - name: gallery
+    description: Gallery management
+  - name: team
+    description: Team member management
+  - name: services
+    description: Services management
+  - name: social-links
+    description: Social media links management
+  - name: company
+    description: Company information management
+  - name: contact
+    description: Contact form
+  - name: stats
+    description: Dashboard statistics
+  - name: storage
+    description: Object storage upload and serving endpoints
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +42,1257 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Projects ──────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 12
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Projects list with pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectList"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectWithImages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /projects/{id}/images:
+    get:
+      operationId: listProjectImages
+      tags: [projects]
+      summary: List images for a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectImage"
+    post:
+      operationId: addProjectImage
+      tags: [projects]
+      summary: Add an image to a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectImageInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectImage"
+
+  /project-images/{imageId}:
+    delete:
+      operationId: deleteProjectImage
+      tags: [projects]
+      summary: Delete a project image
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  # ── Gallery ──────────────────────────────────────────────────────────────
+  /gallery:
+    get:
+      operationId: listGallery
+      tags: [gallery]
+      summary: List gallery items
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Gallery items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GalleryItem"
+    post:
+      operationId: createGalleryItem
+      tags: [gallery]
+      summary: Create a gallery item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GalleryItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryItem"
+
+  /gallery/{id}:
+    get:
+      operationId: getGalleryItem
+      tags: [gallery]
+      summary: Get a gallery item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Gallery item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      operationId: updateGalleryItem
+      tags: [gallery]
+      summary: Update a gallery item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GalleryItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryItem"
+    delete:
+      operationId: deleteGalleryItem
+      tags: [gallery]
+      summary: Delete a gallery item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Team Members ─────────────────────────────────────────────────────────
+  /team:
+    get:
+      operationId: listTeamMembers
+      tags: [team]
+      summary: List team members
+      responses:
+        "200":
+          description: Team members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamMember"
+    post:
+      operationId: createTeamMember
+      tags: [team]
+      summary: Create a team member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamMemberInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMember"
+
+  /team/{id}:
+    get:
+      operationId: getTeamMember
+      tags: [team]
+      summary: Get a team member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Team member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMember"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      operationId: updateTeamMember
+      tags: [team]
+      summary: Update a team member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamMemberUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamMember"
+    delete:
+      operationId: deleteTeamMember
+      tags: [team]
+      summary: Delete a team member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Services ─────────────────────────────────────────────────────────────
+  /services:
+    get:
+      operationId: listServices
+      tags: [services]
+      summary: List services
+      responses:
+        "200":
+          description: Services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+    post:
+      operationId: createService
+      tags: [services]
+      summary: Create a service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+
+  /services/{id}:
+    patch:
+      operationId: updateService
+      tags: [services]
+      summary: Update a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+    delete:
+      operationId: deleteService
+      tags: [services]
+      summary: Delete a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Social Links ──────────────────────────────────────────────────────────
+  /social-links:
+    get:
+      operationId: listSocialLinks
+      tags: [social-links]
+      summary: List social links
+      responses:
+        "200":
+          description: Social links
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SocialLink"
+    post:
+      operationId: createSocialLink
+      tags: [social-links]
+      summary: Create a social link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SocialLinkInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SocialLink"
+
+  /social-links/{id}:
+    patch:
+      operationId: updateSocialLink
+      tags: [social-links]
+      summary: Update a social link
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SocialLinkUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SocialLink"
+    delete:
+      operationId: deleteSocialLink
+      tags: [social-links]
+      summary: Delete a social link
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ── Company Info ──────────────────────────────────────────────────────────
+  /company:
+    get:
+      operationId: getCompanyInfo
+      tags: [company]
+      summary: Get company information
+      responses:
+        "200":
+          description: Company info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyInfo"
+    patch:
+      operationId: updateCompanyInfo
+      tags: [company]
+      summary: Update company information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyInfoUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyInfo"
+
+  # ── Contact ──────────────────────────────────────────────────────────────
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [contact]
+      summary: Submit a contact form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactSubmission"
+      responses:
+        "201":
+          description: Contact submission recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactMessage"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /contact/messages:
+    get:
+      operationId: listContactMessages
+      tags: [contact]
+      summary: List contact messages (admin)
+      parameters:
+        - name: read
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Contact messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContactMessage"
+
+  /contact/messages/{id}/read:
+    patch:
+      operationId: markMessageRead
+      tags: [contact]
+      summary: Mark a contact message as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactMessage"
+
+  # ── Stats (wow endpoint) ──────────────────────────────────────────────────
+  /stats:
+    get:
+      operationId: getDashboardStats
+      tags: [stats]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  # ── Storage ───────────────────────────────────────────────────────────────
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          description: Failed to generate upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/public-objects/{filePath}:
+    get:
+      tags: [storage]
+      operationId: getPublicObject
+      summary: Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
+      parameters:
+        - name: filePath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /storage/objects/{objectPath}:
+    get:
+      tags: [storage]
+      operationId: getStorageObject
+      summary: Serve an object entity
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    # ── Project schemas ─────────────────────────────────────────────────────
+    Project:
+      type: object
+      required: [id, title, description, coverImage, category, featured, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        coverImage:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        completionDate:
+          type: ["string", "null"]
+        category:
+          type: string
+        featured:
+          type: boolean
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    ProjectWithImages:
+      type: object
+      required: [id, title, description, coverImage, category, featured, createdAt, images]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        coverImage:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        completionDate:
+          type: ["string", "null"]
+        category:
+          type: string
+        featured:
+          type: boolean
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectImage"
+
+    ProjectList:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    ProjectInput:
+      type: object
+      required: [title, description, category]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        coverImage:
+          type: string
+        location:
+          type: string
+        completionDate:
+          type: string
+        category:
+          type: string
+        featured:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    ProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        coverImage:
+          type: string
+        location:
+          type: string
+        completionDate:
+          type: string
+        category:
+          type: string
+        featured:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    ProjectImage:
+      type: object
+      required: [id, projectId, imageUrl, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        imageUrl:
+          type: string
+        caption:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    ProjectImageInput:
+      type: object
+      required: [imageUrl]
+      properties:
+        imageUrl:
+          type: string
+        caption:
+          type: string
+        sortOrder:
+          type: integer
+
+    # ── Gallery schemas ────────────────────────────────────────────────────
+    GalleryItem:
+      type: object
+      required: [id, title, imageUrl, category, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        imageUrl:
+          type: string
+        category:
+          type: string
+        description:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    GalleryItemInput:
+      type: object
+      required: [title, imageUrl, category]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        imageUrl:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        sortOrder:
+          type: integer
+
+    GalleryItemUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        imageUrl:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        sortOrder:
+          type: integer
+
+    # ── Team schemas ───────────────────────────────────────────────────────
+    TeamMember:
+      type: object
+      required: [id, name, position, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        position:
+          type: string
+        photo:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        linkedinUrl:
+          type: ["string", "null"]
+        twitterUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    TeamMemberInput:
+      type: object
+      required: [name, position]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        position:
+          type: string
+        photo:
+          type: string
+        bio:
+          type: string
+        email:
+          type: string
+        linkedinUrl:
+          type: string
+        twitterUrl:
+          type: string
+        sortOrder:
+          type: integer
+
+    TeamMemberUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        position:
+          type: string
+        photo:
+          type: string
+        bio:
+          type: string
+        email:
+          type: string
+        linkedinUrl:
+          type: string
+        twitterUrl:
+          type: string
+        sortOrder:
+          type: integer
+
+    # ── Service schemas ────────────────────────────────────────────────────
+    Service:
+      type: object
+      required: [id, title, description, icon, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+
+    ServiceInput:
+      type: object
+      required: [title, description, icon]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        icon:
+          type: string
+        imageUrl:
+          type: string
+        sortOrder:
+          type: integer
+
+    ServiceUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        imageUrl:
+          type: string
+        sortOrder:
+          type: integer
+
+    # ── Social Link schemas ────────────────────────────────────────────────
+    SocialLink:
+      type: object
+      required: [id, platform, url, createdAt]
+      properties:
+        id:
+          type: integer
+        platform:
+          type: string
+        url:
+          type: string
+        createdAt:
+          type: string
+
+    SocialLinkInput:
+      type: object
+      required: [platform, url]
+      properties:
+        platform:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          minLength: 1
+
+    SocialLinkUpdate:
+      type: object
+      properties:
+        platform:
+          type: string
+        url:
+          type: string
+
+    # ── Company Info schemas ───────────────────────────────────────────────
+    CompanyInfo:
+      type: object
+      required: [id, companyName]
+      properties:
+        id:
+          type: integer
+        companyName:
+          type: string
+        slogan:
+          type: ["string", "null"]
+        about:
+          type: ["string", "null"]
+        mission:
+          type: ["string", "null"]
+        vision:
+          type: ["string", "null"]
+        values:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        whatsapp:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        mapEmbedUrl:
+          type: ["string", "null"]
+
+    CompanyInfoUpdate:
+      type: object
+      properties:
+        companyName:
+          type: string
+        slogan:
+          type: string
+        about:
+          type: string
+        mission:
+          type: string
+        vision:
+          type: string
+        values:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        whatsapp:
+          type: string
+        logoUrl:
+          type: string
+        mapEmbedUrl:
+          type: string
+
+    # ── Contact schemas ────────────────────────────────────────────────────
+    ContactSubmission:
+      type: object
+      required: [name, email, subject, message]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+        subject:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+
+    ContactMessage:
+      type: object
+      required: [id, name, email, subject, message, isRead, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        subject:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+
+    # ── Stats schema ───────────────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      required: [projectCount, teamCount, galleryCount, serviceCount, unreadMessages, featuredProjects]
+      properties:
+        projectCount:
+          type: integer
+        teamCount:
+          type: integer
+        galleryCount:
+          type: integer
+        serviceCount:
+          type: integer
+        unreadMessages:
+          type: integer
+        featuredProjects:
+          type: integer
+        projectsByCategory:
+          type: array
+          items:
+            type: object
+            required: [category, count]
+            properties:
+              category:
+                type: string
+              count:
+                type: integer
+        galleryByCategory:
+          type: array
+          items:
+            type: object
+            required: [category, count]
+            properties:
+              category:
+                type: string
+              count:
+                type: integer
+
+    # ── Storage schemas ────────────────────────────────────────────────────
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+        objectPath:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
