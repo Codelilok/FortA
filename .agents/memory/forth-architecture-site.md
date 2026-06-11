@@ -20,21 +20,27 @@ projects, project_images, gallery, team_members, services, social_links, company
 ## Key Decisions
 - Company info uses upsert pattern: GET creates default row if none exists (single-row table).
 - Portfolio filter categories must match DB project categories: Commercial, Residential, Cultural, Institutional, General.
-- Services icons stored by lucide-react component name (e.g. "Building2", "HardHat") — looked up by exact name in serviceIcons map.
+- Services icons stored by lucide-react component name (e.g. "Building2", "HardHat") — looked up by exact name in serviceIcons map. Use `serviceIcons[service.icon]` (NOT `.toLowerCase()`) for lookup.
 - Seed script at `scripts/src/seed.ts` — safe to rerun (skips if records exist).
+- Admin dashboard has full CRUD for all sections: Projects, Gallery, Team, Services, Social Links, Company Info, Messages.
 
-**Why:** Upsert for company info avoids null checks everywhere and ensures the company always has contact details visible.
+**Why:** Upsert for company info avoids null checks everywhere. Direct icon name lookup avoids case mismatch with PascalCase lucide-react component names.
+
+## Admin Dashboard Mutation Patterns
+- Create: `useCreateProject().mutate({ ...fields })`
+- Update: `useUpdateProject().mutate({ id, data: { ...fields } })`
+- Delete: `useDeleteProject().mutate({ id })`
+- Company (singleton): `useUpdateCompanyInfo().mutate({ data: { ...fields } })`
+- Always use `useEffect` (not inline setState during render) to populate form from fetched data.
 
 ## CSS Gotcha
-- The index.css was generated with a duplicated/orphaned `.dark` block after the first `.dark` closing `}`. Fixed by merging orphaned vars back into the block.
-- Tailwind v4: layer declaration `@layer theme, base, clerk, components, utilities;` must come BEFORE `@import "tailwindcss"`.
+- Tailwind v4: layer declaration must come BEFORE `@import "tailwindcss"`.
 - Google Font `@import url(...)` must be the absolute first line of index.css.
 
 ## Clerk Wiring
 - `publishableKeyFromHost` from `@clerk/react/internal` (NOT `@clerk/react`).
-- `proxyUrl = import.meta.env.VITE_CLERK_PROXY_URL` — empty in dev (intentional), auto-set in prod.
-- Route patterns must be exactly `"/sign-in/*?"` and `"/sign-up/*?"`.
+- `proxyUrl = import.meta.env.VITE_CLERK_PROXY_URL` — empty in dev (intentional).
 
-## API Calling Convention
-- Generated hooks: first arg is params object, second is options. E.g. `useListProjects({ category, page, limit })`.
-- Hooks return `T` directly — for paginated endpoints, `data` has `.data[]`, `.total`, `.page`, `.limit`.
+## Navbar Logo
+- Logo uses "F" square box (navy bg, gold text), with "FORTH ARCHITECTURE" bold and "CONSULTING & CONSTRUCTION LTD" in small caps below.
+- Transitions from gold-on-navy (transparent) to primary-on-white (scrolled).

@@ -72,7 +72,7 @@ export default function ServicesPage() {
               ))
             ) : (
               services?.map((service, index) => {
-                const Icon = serviceIcons[service.icon.toLowerCase()] || Building2;
+                const Icon = serviceIcons[service.icon] || serviceIcons[service.icon.toLowerCase()] || Building2;
                 return (
                   <FadeIn key={service.id} delay={index * 0.05}>
                     <motion.div 
