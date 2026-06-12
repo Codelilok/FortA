@@ -25,7 +25,7 @@ export default function ProjectDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <Navbar solid />
         <div className="pt-32 pb-24 container mx-auto px-4 md:px-6">
           <Skeleton className="h-10 w-48 mb-12" />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -48,7 +48,7 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <Navbar />
+        <Navbar solid />
         <h2 className="text-3xl font-serif font-bold text-primary mb-6">Project Not Found</h2>
         <Link href="/portfolio">
           <Button className="bg-primary text-white">Back to Portfolio</Button>
@@ -60,7 +60,7 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Navbar solid />
 
       <section className="pt-32 pb-24">
         <div className="container mx-auto px-4 md:px-6">

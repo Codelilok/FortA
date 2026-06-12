@@ -15,10 +15,12 @@ const navLinks = [
   { name: "Contact", href: "/contact" },
 ];
 
-export function Navbar() {
+export function Navbar({ solid = false }: { solid?: boolean }) {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const solidMode = solid || isScrolled;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -30,7 +32,7 @@ export function Navbar() {
     <nav
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled
+        solidMode
           ? "bg-white/95 backdrop-blur-md shadow-md py-2"
           : "bg-transparent py-4"
       )}
@@ -40,7 +42,7 @@ export function Navbar() {
           <div className="relative">
             <div className={cn(
               "w-10 h-10 rounded-lg flex items-center justify-center font-serif font-black text-lg transition-all",
-              isScrolled ? "bg-primary text-secondary" : "bg-secondary text-primary"
+              solidMode ? "bg-primary text-secondary" : "bg-secondary text-primary"
             )}>
               F
             </div>
@@ -48,13 +50,13 @@ export function Navbar() {
           <div className="flex flex-col leading-none">
             <span className={cn(
               "font-serif font-bold text-sm tracking-tight transition-colors",
-              isScrolled ? "text-primary" : "text-white"
+              solidMode ? "text-primary" : "text-white"
             )}>
               FORTH ARCHITECTURE &amp;
             </span>
             <span className={cn(
               "text-[9px] tracking-widest uppercase transition-colors font-medium",
-              isScrolled ? "text-muted-foreground" : "text-white/70"
+              solidMode ? "text-muted-foreground" : "text-white/70"
             )}>
               CONSULTING CONSTRUCTION LTD
             </span>
@@ -70,7 +72,7 @@ export function Navbar() {
                 "text-sm font-medium transition-colors hover:text-secondary relative py-1",
                 location === link.href
                   ? "text-secondary"
-                  : isScrolled ? "text-primary" : "text-white",
+                  : solidMode ? "text-primary" : "text-white",
                 location === link.href && "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-secondary after:rounded-full"
               )}
             >
@@ -82,7 +84,7 @@ export function Navbar() {
               href="/admin"
               className={cn(
                 "text-sm font-medium transition-colors hover:text-secondary",
-                isScrolled ? "text-primary" : "text-white"
+                solidMode ? "text-primary" : "text-white"
               )}
             >
               Admin
@@ -93,7 +95,7 @@ export function Navbar() {
               size="sm"
               className={cn(
                 "font-semibold transition-all",
-                isScrolled
+                solidMode
                   ? "bg-primary text-white hover:bg-secondary hover:text-primary"
                   : "bg-secondary text-primary hover:bg-white hover:text-primary"
               )}
@@ -108,9 +110,9 @@ export function Navbar() {
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? (
-            <X className={isScrolled ? "text-primary" : "text-white"} size={22} />
+            <X className={solidMode ? "text-primary" : "text-white"} size={22} />
           ) : (
-            <Menu className={isScrolled ? "text-primary" : "text-white"} size={22} />
+            <Menu className={solidMode ? "text-primary" : "text-white"} size={22} />
           )}
         </button>
       </div>
