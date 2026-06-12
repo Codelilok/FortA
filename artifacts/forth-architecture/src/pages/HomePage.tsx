@@ -161,7 +161,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProjects?.data.map((project, index) => (
+            {featuredProjects?.data?.map((project, index) => (
               <FadeIn key={project.id} delay={index * 0.1} direction="up">
                 <Link href={`/portfolio/${project.id}`}>
                   <Card className="group overflow-hidden border-0 shadow-lg cursor-pointer h-full bg-white transition-all hover:shadow-2xl">

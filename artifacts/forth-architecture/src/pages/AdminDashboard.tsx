@@ -162,7 +162,7 @@ function ProjectsManagement() {
       <SectionHeader title="Projects" onAdd={openCreate} />
       <div className="space-y-3">
         {isLoading ? Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />) :
-          projects?.data.map((p) => (
+          projects?.data?.map((p) => (
             <Card key={p.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
