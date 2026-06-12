@@ -1,4 +1,5 @@
-import { db, projectsTable, galleryTable, teamMembersTable, servicesTable, socialLinksTable, companyInfoTable } from "@workspace/db";
+import bcrypt from "bcryptjs";
+import { db, projectsTable, galleryTable, teamMembersTable, servicesTable, socialLinksTable, companyInfoTable, adminsTable } from "@workspace/db";
 
 async function seed() {
   console.log("Seeding database...");
@@ -210,6 +211,16 @@ async function seed() {
       { platform: "facebook", url: "https://facebook.com/fortharchitecture" },
     ]);
     console.log("✓ Social links seeded");
+  }
+
+  // Admin user
+  const existingAdmin = await db.select().from(adminsTable).limit(1);
+  if (existingAdmin.length === 0) {
+    const passwordHash = await bcrypt.hash("forth2024", 10);
+    await db.insert(adminsTable).values({ username: "admin", passwordHash });
+    console.log("✓ Admin user seeded — username: admin / password: forth2024");
+  } else {
+    console.log("✓ Admin user already exists");
   }
 
   console.log("✅ Seeding complete!");

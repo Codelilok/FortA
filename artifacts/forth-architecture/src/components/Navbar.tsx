@@ -1,9 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { Show } from "@clerk/react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAdminAuth } from "@/lib/auth";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -19,6 +19,7 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
   const [location] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAdmin } = useAdminAuth();
 
   const solidMode = solid || isScrolled;
 
@@ -79,7 +80,7 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
               {link.name}
             </Link>
           ))}
-          <Show when="signed-in">
+          {isAdmin && (
             <Link
               href="/admin"
               className={cn(
@@ -89,7 +90,7 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
             >
               Admin
             </Link>
-          </Show>
+          )}
           <Link href="/contact">
             <Button
               size="sm"
@@ -135,7 +136,7 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
                 {link.name}
               </Link>
             ))}
-            <Show when="signed-in">
+            {isAdmin && (
               <Link
                 href="/admin"
                 className="text-base font-medium p-3 rounded-xl text-secondary hover:bg-secondary/10 transition-all"
@@ -143,7 +144,7 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
               >
                 Admin Dashboard
               </Link>
-            </Show>
+            )}
             <div className="pt-2 mt-2 border-t border-border">
               <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button className="w-full bg-primary text-white">Start a Project</Button>

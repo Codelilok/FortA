@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useUser, useClerk, Show } from "@clerk/react";
-import { Redirect, Link, Switch, Route, useLocation } from "wouter";
+import { useAdminAuth, adminLogout } from "@/lib/auth";
+import { Link, Switch, Route, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetDashboardStats,
@@ -976,8 +976,7 @@ function DashboardOverview() {
 }
 
 function AdminDashboardContent() {
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { username } = useAdminAuth();
   const [location] = useLocation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { data: messages } = useListContactMessages();
@@ -1015,17 +1014,17 @@ function AdminDashboardContent() {
         </Link>
         <div className="flex items-center gap-3 px-4 py-2">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0">
-            {user?.firstName?.[0] || "A"}
+            {username?.[0]?.toUpperCase() || "A"}
           </div>
           <div className="flex-grow min-w-0">
-            <p className="text-sm font-bold text-primary truncate">{user?.fullName || "Admin"}</p>
+            <p className="text-sm font-bold text-primary truncate">{username || "Admin"}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Administrator</p>
           </div>
         </div>
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl text-sm"
-          onClick={() => signOut()}
+          onClick={async () => { await adminLogout(); window.location.href = "/admin/login"; }}
         >
           <LogOut size={16} /> Sign Out
         </Button>
@@ -1104,14 +1103,5 @@ function AdminDashboardContent() {
 }
 
 export default function AdminDashboard() {
-  return (
-    <>
-      <Show when="signed-in">
-        <AdminDashboardContent />
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/sign-in" />
-      </Show>
-    </>
-  );
+  return <AdminDashboardContent />;
 }
