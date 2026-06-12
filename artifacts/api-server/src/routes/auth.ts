@@ -37,6 +37,7 @@ router.post("/auth/logout", (req, res) => {
 });
 
 router.get("/auth/me", (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
   if (req.session?.adminId) {
     res.json({ admin: true, username: req.session.adminUsername });
   } else {
