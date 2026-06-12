@@ -211,7 +211,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {services?.map((service, index) => {
-              const Icon = serviceIcons[service.icon.toLowerCase()] || Building2;
+              const Icon = serviceIcons[service.icon] || Building2;
               return (
                 <FadeIn key={service.id} delay={index * 0.1}>
                   <div className="group p-10 bg-white border border-border rounded-2xl transition-all duration-300 hover:border-secondary hover:shadow-xl h-full flex flex-col items-center text-center">
