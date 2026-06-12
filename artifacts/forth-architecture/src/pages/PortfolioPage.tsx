@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useListProjects } from "@workspace/api-client-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -8,27 +8,33 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
-import { 
-  Compass, 
-  ArrowRight, 
-  ChevronLeft, 
+import {
+  Compass,
+  ArrowRight,
+  ChevronLeft,
   ChevronRight,
   Filter
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const categories = ["All", "Commercial", "Residential", "Cultural", "Institutional", "General"];
-
 export default function PortfolioPage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [page, setPage] = useState(1);
   const limit = 9;
 
+  const { data: allProjects } = useListProjects({ limit: 100 });
+
+  const categories = useMemo(() => {
+    if (!allProjects?.data) return ["All"];
+    const unique = Array.from(new Set(allProjects.data.map((p) => p.category).filter(Boolean)));
+    return ["All", ...unique.sort()];
+  }, [allProjects]);
+
   const { data: projectsData, isLoading } = useListProjects({
     category: activeCategory === "All" ? undefined : activeCategory,
     page,
-    limit
+    limit,
   });
 
   const totalPages = projectsData ? Math.ceil(projectsData.total / limit) : 1;
@@ -72,8 +78,8 @@ export default function PortfolioPage() {
               }}
               className={cn(
                 "px-6 py-2 rounded-full text-sm font-bold transition-all border",
-                activeCategory === cat 
-                  ? "bg-primary text-white border-primary shadow-md" 
+                activeCategory === cat
+                  ? "bg-primary text-white border-primary shadow-md"
                   : "bg-transparent text-primary border-border hover:border-secondary hover:text-secondary"
               )}
             >
@@ -94,7 +100,7 @@ export default function PortfolioPage() {
                 ))}
               </div>
             ) : (
-              <motion.div 
+              <motion.div
                 key={activeCategory + page}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -106,8 +112,8 @@ export default function PortfolioPage() {
                     <Link href={`/portfolio/${project.id}`}>
                       <Card className="group overflow-hidden border-0 shadow-lg cursor-pointer h-full bg-white transition-all hover:shadow-2xl flex flex-col">
                         <div className="relative aspect-[4/3] overflow-hidden">
-                          <img 
-                            src={project.coverImage || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&q=80&w=800"} 
+                          <img
+                            src={project.coverImage || "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&q=80&w=800"}
                             alt={project.title}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           />
@@ -146,7 +152,7 @@ export default function PortfolioPage() {
           </AnimatePresence>
 
           {/* Empty State */}
-          {!isLoading && projectsData?.data.length === 0 && (
+          {!isLoading && projectsData?.data?.length === 0 && (
             <div className="text-center py-24 space-y-6">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-8">
                 <Compass className="w-12 h-12 text-muted-foreground" />
@@ -155,7 +161,7 @@ export default function PortfolioPage() {
               <p className="text-muted-foreground max-w-md mx-auto">
                 We couldn't find any projects in the {activeCategory} category. Try switching filters.
               </p>
-              <Button 
+              <Button
                 onClick={() => setActiveCategory("All")}
                 className="bg-primary text-white"
               >

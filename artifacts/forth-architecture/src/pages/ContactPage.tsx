@@ -25,7 +25,8 @@ import {
   MapPin, 
   Clock,
   Send,
-  CheckCircle2
+  CheckCircle2,
+  ArrowRight
 } from "lucide-react";
 
 const contactFormSchema = z.object({
@@ -255,21 +256,43 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Map Embed Placeholder */}
+              {/* Map Embed */}
               {company?.mapEmbedUrl ? (
                 <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg border border-border">
-                  <iframe 
+                  <iframe
                     src={company.mapEmbedUrl}
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0 }} 
-                    allowFullScreen 
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
                     loading="lazy"
                   ></iframe>
                 </div>
               ) : (
-                <div className="aspect-video w-full rounded-2xl bg-gray-100 border border-border flex items-center justify-center text-muted-foreground text-sm italic">
-                  Interactive map will appear here
+                <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border shadow-lg bg-primary relative flex flex-col items-center justify-center text-center p-8 gap-4">
+                  <div className="absolute inset-0 opacity-10"
+                    style={{
+                      backgroundImage: `radial-gradient(circle at 1px 1px, white 1px, transparent 0)`,
+                      backgroundSize: "32px 32px"
+                    }}
+                  />
+                  <div className="relative z-10 space-y-3">
+                    <div className="w-14 h-14 rounded-2xl bg-secondary/20 border border-secondary/30 flex items-center justify-center mx-auto">
+                      <MapPin className="text-secondary" size={28} />
+                    </div>
+                    <p className="text-white font-serif text-xl font-bold">Find Us Here</p>
+                    <p className="text-white/70 text-sm max-w-xs leading-relaxed">
+                      {company?.address || "15 Independence Avenue, Accra, Ghana"}
+                    </p>
+                    <a
+                      href={`https://www.google.com/maps/search/${encodeURIComponent(company?.address || "Accra, Ghana")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 mt-2 text-secondary text-sm font-bold hover:underline"
+                    >
+                      Open in Google Maps <ArrowRight size={14} />
+                    </a>
+                  </div>
                 </div>
               )}
             </FadeIn>
