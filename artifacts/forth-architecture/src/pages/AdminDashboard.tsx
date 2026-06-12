@@ -1040,8 +1040,8 @@ function AdminDashboardContent() {
         <div className="flex items-center gap-3 mb-8 px-2">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-xl shrink-0">F</div>
           <div className="min-w-0">
-            <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE</h1>
-            <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING & CONSTRUCTION LTD</p>
+            <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE &amp;</h1>
+            <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING CONSTRUCTION LTD</p>
           </div>
         </div>
         <SidebarContent />
@@ -1055,8 +1055,8 @@ function AdminDashboardContent() {
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-xl shrink-0">F</div>
                 <div>
-                  <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE</h1>
-                  <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING & CONSTRUCTION LTD</p>
+                  <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE &amp;</h1>
+                  <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING CONSTRUCTION LTD</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={closeSidebar}><X size={18} /></Button>
@@ -1073,8 +1073,8 @@ function AdminDashboardContent() {
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-lg shrink-0">F</div>
             <div>
-              <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE</h1>
-              <p className="text-[8px] text-secondary/70 uppercase tracking-wider font-medium">CONSULTING & CONSTRUCTION LTD</p>
+              <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE &amp;</h1>
+              <p className="text-[8px] text-secondary/70 uppercase tracking-wider font-medium">CONSULTING CONSTRUCTION LTD</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setIsMobileSidebarOpen(true)}>

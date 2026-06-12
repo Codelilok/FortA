@@ -50,13 +50,13 @@ export function Navbar() {
               "font-serif font-bold text-sm tracking-tight transition-colors",
               isScrolled ? "text-primary" : "text-white"
             )}>
-              FORTH ARCHITECTURE
+              FORTH ARCHITECTURE &amp;
             </span>
             <span className={cn(
               "text-[9px] tracking-widest uppercase transition-colors font-medium",
               isScrolled ? "text-muted-foreground" : "text-white/70"
             )}>
-              CONSULTING & CONSTRUCTION LTD
+              CONSULTING CONSTRUCTION LTD
             </span>
           </div>
         </Link>
