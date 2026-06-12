@@ -500,6 +500,11 @@ export const GetCompanyInfoResponse = zod.object({
   "whatsapp": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "mapEmbedUrl": zod.string().nullish(),
+  "heroTitle": zod.string().nullish(),
+  "heroSubtitle": zod.string().nullish(),
+  "ctaTitle": zod.string().nullish(),
+  "ctaSubtitle": zod.string().nullish(),
+  "workingHours": zod.string().nullish(),
   "projectsCompleted": zod.number().nullish(),
   "yearsOfExperience": zod.number().nullish(),
   "teamMembersCount": zod.number().nullish(),
@@ -523,6 +528,11 @@ export const UpdateCompanyInfoBody = zod.object({
   "whatsapp": zod.string().optional(),
   "logoUrl": zod.string().optional(),
   "mapEmbedUrl": zod.string().optional(),
+  "heroTitle": zod.string().optional(),
+  "heroSubtitle": zod.string().optional(),
+  "ctaTitle": zod.string().optional(),
+  "ctaSubtitle": zod.string().optional(),
+  "workingHours": zod.string().optional(),
   "projectsCompleted": zod.number().optional(),
   "yearsOfExperience": zod.number().optional(),
   "teamMembersCount": zod.number().optional(),
@@ -543,10 +553,153 @@ export const UpdateCompanyInfoResponse = zod.object({
   "whatsapp": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
   "mapEmbedUrl": zod.string().nullish(),
+  "heroTitle": zod.string().nullish(),
+  "heroSubtitle": zod.string().nullish(),
+  "ctaTitle": zod.string().nullish(),
+  "ctaSubtitle": zod.string().nullish(),
+  "workingHours": zod.string().nullish(),
   "projectsCompleted": zod.number().nullish(),
   "yearsOfExperience": zod.number().nullish(),
   "teamMembersCount": zod.number().nullish(),
   "awardsWon": zod.number().nullish()
+})
+
+
+/**
+ * @summary List testimonials
+ */
+export const ListTestimonialsResponseItem = zod.object({
+  "id": zod.number(),
+  "quote": zod.string(),
+  "authorName": zod.string(),
+  "authorRole": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "active": zod.boolean(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string().optional()
+})
+export const ListTestimonialsResponse = zod.array(ListTestimonialsResponseItem)
+
+
+/**
+ * @summary Create a testimonial
+ */
+
+
+
+
+export const CreateTestimonialBody = zod.object({
+  "quote": zod.string().min(1),
+  "authorName": zod.string().min(1),
+  "authorRole": zod.string(),
+  "avatarUrl": zod.string().optional(),
+  "active": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+
+/**
+ * @summary Update a testimonial
+ */
+export const UpdateTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const UpdateTestimonialBody = zod.object({
+  "quote": zod.string().min(1),
+  "authorName": zod.string().min(1),
+  "authorRole": zod.string(),
+  "avatarUrl": zod.string().optional(),
+  "active": zod.boolean().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const UpdateTestimonialResponse = zod.object({
+  "id": zod.number(),
+  "quote": zod.string(),
+  "authorName": zod.string(),
+  "authorRole": zod.string(),
+  "avatarUrl": zod.string().nullish(),
+  "active": zod.boolean(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete a testimonial
+ */
+export const DeleteTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List process steps
+ */
+export const ListProcessStepsResponseItem = zod.object({
+  "id": zod.number(),
+  "stepNumber": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string().optional()
+})
+export const ListProcessStepsResponse = zod.array(ListProcessStepsResponseItem)
+
+
+/**
+ * @summary Create a process step
+ */
+
+
+
+
+export const CreateProcessStepBody = zod.object({
+  "stepNumber": zod.string().min(1),
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+
+/**
+ * @summary Update a process step
+ */
+export const UpdateProcessStepParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const UpdateProcessStepBody = zod.object({
+  "stepNumber": zod.string().min(1),
+  "title": zod.string().min(1),
+  "description": zod.string().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+export const UpdateProcessStepResponse = zod.object({
+  "id": zod.number(),
+  "stepNumber": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete a process step
+ */
+export const DeleteProcessStepParams = zod.object({
+  "id": zod.coerce.number()
 })
 
 

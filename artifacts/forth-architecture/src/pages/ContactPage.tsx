@@ -250,8 +250,11 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-primary uppercase tracking-widest text-xs mb-1">Working Hours</h4>
-                    <p className="text-lg text-muted-foreground">Mon - Fri: 9:00 AM - 6:00 PM</p>
-                    <p className="text-muted-foreground">Sat - Sun: Closed</p>
+                    {(company?.workingHours || "Mon - Fri: 9:00 AM - 6:00 PM\nSat - Sun: Closed")
+                      .split("\n")
+                      .map((line, i) => (
+                        <p key={i} className={i === 0 ? "text-lg text-muted-foreground" : "text-muted-foreground"}>{line}</p>
+                      ))}
                   </div>
                 </div>
               </div>

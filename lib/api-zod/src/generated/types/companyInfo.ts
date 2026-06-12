@@ -32,6 +32,16 @@ export interface CompanyInfo {
   /** @nullable */
   mapEmbedUrl?: string | null;
   /** @nullable */
+  heroTitle?: string | null;
+  /** @nullable */
+  heroSubtitle?: string | null;
+  /** @nullable */
+  ctaTitle?: string | null;
+  /** @nullable */
+  ctaSubtitle?: string | null;
+  /** @nullable */
+  workingHours?: string | null;
+  /** @nullable */
   projectsCompleted?: number | null;
   /** @nullable */
   yearsOfExperience?: number | null;

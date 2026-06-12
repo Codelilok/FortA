@@ -11,16 +11,19 @@ import {
   useListSocialLinks, useCreateSocialLink, useUpdateSocialLink, useDeleteSocialLink,
   useGetCompanyInfo, useUpdateCompanyInfo,
   useListContactMessages, useMarkMessageRead, useDeleteContactMessage,
+  useListTestimonials, useCreateTestimonial, useUpdateTestimonial, useDeleteTestimonial,
+  useListProcessSteps, useCreateProcessStep, useUpdateProcessStep, useDeleteProcessStep,
   getListProjectsQueryKey, getListGalleryQueryKey, getListTeamMembersQueryKey,
   getListServicesQueryKey, getListSocialLinksQueryKey, getGetCompanyInfoQueryKey,
   getListContactMessagesQueryKey, getGetDashboardStatsQueryKey,
+  getListTestimonialsQueryKey, getListProcessStepsQueryKey,
 } from "@workspace/api-client-react";
 import {
   LayoutDashboard, Building2, Image as ImageIcon, Users, Hammer, Share2,
   Info, Mail, LogOut, Plus, CheckCircle2, Trash2, Edit, ExternalLink,
   ChevronRight, Menu, X, Star, StarOff, Eye, EyeOff, Globe, Twitter,
   Linkedin, Instagram, Facebook, Youtube, Link2, Phone, MapPin,
-  BarChart3, TrendingUp, Sofa, Leaf, Compass,
+  BarChart3, TrendingUp, Sofa, Leaf, Compass, MessageSquare, ListOrdered,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -697,6 +700,11 @@ function CompanyInfoManagement() {
         address: company.address || "",
         whatsapp: company.whatsapp || "",
         mapEmbedUrl: company.mapEmbedUrl || "",
+        heroTitle: company.heroTitle || "",
+        heroSubtitle: company.heroSubtitle || "",
+        ctaTitle: company.ctaTitle || "",
+        ctaSubtitle: company.ctaSubtitle || "",
+        workingHours: company.workingHours || "",
         projectsCompleted: company.projectsCompleted ?? 120,
         yearsOfExperience: company.yearsOfExperience ?? 15,
         teamMembersCount: company.teamMembersCount ?? 25,
@@ -756,6 +764,29 @@ function CompanyInfoManagement() {
             {form.mapEmbedUrl && (
               <iframe src={form.mapEmbedUrl} className="w-full h-40 rounded-lg border border-border" allowFullScreen loading="lazy" title="Map" />
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm lg:col-span-2">
+          <CardHeader><CardTitle className="font-serif text-lg">Hero Section</CardTitle><CardDescription>The big banner text visitors see first on the homepage</CardDescription></CardHeader>
+          <CardContent className="space-y-4">
+            <div><Label>Hero Title (use a comma to split into two lines)</Label><Input value={form.heroTitle || ""} onChange={e => setForm({ ...form, heroTitle: e.target.value })} placeholder="Building Visions, Crafting Excellence" /></div>
+            <div><Label>Hero Subtitle</Label><Textarea value={form.heroSubtitle || ""} onChange={e => setForm({ ...form, heroSubtitle: e.target.value })} rows={2} placeholder="Professional architecture and construction services..." /></div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm lg:col-span-2">
+          <CardHeader><CardTitle className="font-serif text-lg">Call-to-Action Section</CardTitle><CardDescription>The "Ready to start?" banner at the bottom of the homepage</CardDescription></CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><Label>CTA Title</Label><Input value={form.ctaTitle || ""} onChange={e => setForm({ ...form, ctaTitle: e.target.value })} placeholder="Ready to Start Your Next Project?" /></div>
+            <div><Label>CTA Subtitle</Label><Input value={form.ctaSubtitle || ""} onChange={e => setForm({ ...form, ctaSubtitle: e.target.value })} placeholder="Join hundreds of satisfied clients..." /></div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm">
+          <CardHeader><CardTitle className="font-serif text-lg">Working Hours</CardTitle><CardDescription>Shown on the Contact page. Use a new line for each entry.</CardDescription></CardHeader>
+          <CardContent>
+            <div><Label>Working Hours</Label><Textarea value={form.workingHours || ""} onChange={e => setForm({ ...form, workingHours: e.target.value })} rows={3} placeholder={"Mon - Fri: 9:00 AM - 6:00 PM\nSat - Sun: Closed"} /></div>
           </CardContent>
         </Card>
 
@@ -1031,6 +1062,185 @@ function DashboardOverview() {
   );
 }
 
+function TestimonialsManagement() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data: testimonials, isLoading } = useListTestimonials();
+  const create = useCreateTestimonial();
+  const update = useUpdateTestimonial();
+  const remove = useDeleteTestimonial();
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const emptyForm = { quote: "", authorName: "", authorRole: "", avatarUrl: "", active: true, sortOrder: 0 };
+  const [form, setForm] = useState<any>(emptyForm);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: getListTestimonialsQueryKey() });
+
+  const openAdd = () => { setEditing(null); setForm(emptyForm); setShowForm(true); };
+  const openEdit = (t: any) => { setEditing(t); setForm({ quote: t.quote, authorName: t.authorName, authorRole: t.authorRole, avatarUrl: t.avatarUrl || "", active: t.active, sortOrder: t.sortOrder }); setShowForm(true); };
+
+  const handleSave = () => {
+    if (!form.quote || !form.authorName) { toast({ title: "Quote and name are required", variant: "destructive" }); return; }
+    const payload = { data: { ...form, sortOrder: Number(form.sortOrder) || 0 } };
+    if (editing) {
+      update.mutate({ id: editing.id, ...payload }, { onSuccess: () => { invalidate(); setShowForm(false); toast({ title: "Testimonial updated" }); } });
+    } else {
+      create.mutate(payload, { onSuccess: () => { invalidate(); setShowForm(false); toast({ title: "Testimonial added" }); } });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    remove.mutate({ id: deleteTarget }, { onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "Testimonial deleted" }); } });
+  };
+
+  return (
+    <div className="animate-in fade-in duration-300">
+      <SectionHeader title="Testimonials" onAdd={openAdd} addLabel="Add Testimonial" />
+      <div className="space-y-4">
+        {isLoading ? Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />) :
+          testimonials?.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground"><MessageSquare size={40} className="mx-auto mb-4 opacity-20" /><p>No testimonials yet.</p></div>
+          ) : (
+            testimonials?.map(t => (
+              <Card key={t.id} className="border-0 shadow-sm">
+                <CardContent className="p-6 flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary shrink-0">
+                    {t.authorName[0]}
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <p className="italic text-muted-foreground text-sm mb-2 line-clamp-2">"{t.quote}"</p>
+                    <p className="font-bold text-primary text-sm">{t.authorName}</p>
+                    <p className="text-xs text-muted-foreground">{t.authorRole}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant={t.active ? "default" : "outline"} className={t.active ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>{t.active ? "Active" : "Hidden"}</Badge>
+                    <Button size="icon" variant="ghost" onClick={() => openEdit(t)}><Edit size={15} /></Button>
+                    <Button size="icon" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => setDeleteTarget(t.id)}><Trash2 size={15} /></Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+      </div>
+
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{editing ? "Edit Testimonial" : "Add Testimonial"}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div><Label>Quote *</Label><Textarea value={form.quote} onChange={e => setForm({ ...form, quote: e.target.value })} rows={3} placeholder="What the client said..." /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Author Name *</Label><Input value={form.authorName} onChange={e => setForm({ ...form, authorName: e.target.value })} placeholder="Jane Smith" /></div>
+              <div><Label>Author Role</Label><Input value={form.authorRole} onChange={e => setForm({ ...form, authorRole: e.target.value })} placeholder="CEO, Company" /></div>
+            </div>
+            <div><Label>Avatar URL</Label><Input value={form.avatarUrl} onChange={e => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." /></div>
+            <div className="flex items-center gap-3">
+              <SwitchUI checked={form.active} onCheckedChange={v => setForm({ ...form, active: v })} id="active-switch" />
+              <Label htmlFor="active-switch">Show on website</Label>
+            </div>
+            <div><Label>Sort Order</Label><Input type="number" min={0} value={form.sortOrder} onChange={e => setForm({ ...form, sortOrder: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={create.isPending || update.isPending} className="bg-primary">
+              {(create.isPending || update.isPending) ? "Saving..." : editing ? "Save Changes" : "Add Testimonial"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDelete open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} name="this testimonial" />
+    </div>
+  );
+}
+
+function ProcessStepsManagement() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data: steps, isLoading } = useListProcessSteps();
+  const create = useCreateProcessStep();
+  const update = useUpdateProcessStep();
+  const remove = useDeleteProcessStep();
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const emptyForm = { stepNumber: "", title: "", description: "", sortOrder: 0 };
+  const [form, setForm] = useState<any>(emptyForm);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: getListProcessStepsQueryKey() });
+
+  const openAdd = () => { setEditing(null); setForm(emptyForm); setShowForm(true); };
+  const openEdit = (s: any) => { setEditing(s); setForm({ stepNumber: s.stepNumber, title: s.title, description: s.description, sortOrder: s.sortOrder }); setShowForm(true); };
+
+  const handleSave = () => {
+    if (!form.stepNumber || !form.title) { toast({ title: "Step number and title are required", variant: "destructive" }); return; }
+    const payload = { data: { ...form, sortOrder: Number(form.sortOrder) || 0 } };
+    if (editing) {
+      update.mutate({ id: editing.id, ...payload }, { onSuccess: () => { invalidate(); setShowForm(false); toast({ title: "Step updated" }); } });
+    } else {
+      create.mutate(payload, { onSuccess: () => { invalidate(); setShowForm(false); toast({ title: "Step added" }); } });
+    }
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    remove.mutate({ id: deleteTarget }, { onSuccess: () => { invalidate(); setDeleteTarget(null); toast({ title: "Step deleted" }); } });
+  };
+
+  return (
+    <div className="animate-in fade-in duration-300">
+      <SectionHeader title="Process Steps" onAdd={openAdd} addLabel="Add Step" />
+      <div className="space-y-4">
+        {isLoading ? Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />) :
+          steps?.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground"><ListOrdered size={40} className="mx-auto mb-4 opacity-20" /><p>No steps yet.</p></div>
+          ) : (
+            steps?.map((s, index) => (
+              <Card key={s.id} className="border-0 shadow-sm">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-secondary/20 text-secondary rounded-full flex items-center justify-center text-lg font-bold shrink-0">
+                    {s.stepNumber}
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h4 className="font-bold text-primary">{s.title}</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-1">{s.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button size="icon" variant="ghost" onClick={() => openEdit(s)}><Edit size={15} /></Button>
+                    <Button size="icon" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => setDeleteTarget(s.id)}><Trash2 size={15} /></Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+      </div>
+
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>{editing ? "Edit Step" : "Add Process Step"}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Step Number *</Label><Input value={form.stepNumber} onChange={e => setForm({ ...form, stepNumber: e.target.value })} placeholder="01" /></div>
+              <div><Label>Sort Order</Label><Input type="number" min={0} value={form.sortOrder} onChange={e => setForm({ ...form, sortOrder: e.target.value })} /></div>
+            </div>
+            <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Consultation" /></div>
+            <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} placeholder="Brief description of this step..." /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={create.isPending || update.isPending} className="bg-primary">
+              {(create.isPending || update.isPending) ? "Saving..." : editing ? "Save Changes" : "Add Step"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDelete open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} name="this step" />
+    </div>
+  );
+}
+
 function AdminDashboardContent() {
   const { username } = useAdminAuth();
   const [location] = useLocation();
@@ -1044,6 +1254,8 @@ function AdminDashboardContent() {
     { href: "/admin/gallery", icon: ImageIcon, label: "Gallery" },
     { href: "/admin/team", icon: Users, label: "Team" },
     { href: "/admin/services", icon: Hammer, label: "Services" },
+    { href: "/admin/testimonials", icon: MessageSquare, label: "Testimonials" },
+    { href: "/admin/process-steps", icon: ListOrdered, label: "Process Steps" },
     { href: "/admin/social", icon: Share2, label: "Social Links" },
     { href: "/admin/company", icon: Info, label: "Company Info" },
     { href: "/admin/messages", icon: Mail, label: "Messages", badge: unread },
@@ -1143,6 +1355,8 @@ function AdminDashboardContent() {
               <Route path="/admin/gallery" component={GalleryManagement} />
               <Route path="/admin/team" component={TeamManagement} />
               <Route path="/admin/services" component={ServicesManagement} />
+              <Route path="/admin/testimonials" component={TestimonialsManagement} />
+              <Route path="/admin/process-steps" component={ProcessStepsManagement} />
               <Route path="/admin/social" component={SocialLinksManagement} />
               <Route path="/admin/company" component={CompanyInfoManagement} />
               <Route path="/admin/messages" component={MessagesInbox} />

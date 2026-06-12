@@ -10,6 +10,8 @@ import socialLinksRouter from "./social-links";
 import companyRouter from "./company";
 import contactRouter from "./contact";
 import statsRouter from "./stats";
+import testimonialsRouter from "./testimonials";
+import processStepsRouter from "./process-steps";
 
 const router: IRouter = Router();
 
@@ -24,5 +26,7 @@ router.use(socialLinksRouter);
 router.use(companyRouter);
 router.use(contactRouter);
 router.use(statsRouter);
+router.use(testimonialsRouter);
+router.use(processStepsRouter);
 
 export default router;

@@ -209,6 +209,47 @@ export interface SocialLinkUpdate {
   url?: string;
 }
 
+export interface Testimonial {
+  id: number;
+  quote: string;
+  authorName: string;
+  authorRole: string;
+  /** @nullable */
+  avatarUrl?: string | null;
+  active: boolean;
+  sortOrder: number;
+  createdAt?: string;
+}
+
+export interface TestimonialInput {
+  /** @minLength 1 */
+  quote: string;
+  /** @minLength 1 */
+  authorName: string;
+  authorRole: string;
+  avatarUrl?: string;
+  active?: boolean;
+  sortOrder?: number;
+}
+
+export interface ProcessStep {
+  id: number;
+  stepNumber: string;
+  title: string;
+  description: string;
+  sortOrder: number;
+  createdAt?: string;
+}
+
+export interface ProcessStepInput {
+  /** @minLength 1 */
+  stepNumber: string;
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  sortOrder?: number;
+}
+
 export interface CompanyInfo {
   id: number;
   companyName: string;
@@ -235,6 +276,16 @@ export interface CompanyInfo {
   /** @nullable */
   mapEmbedUrl?: string | null;
   /** @nullable */
+  heroTitle?: string | null;
+  /** @nullable */
+  heroSubtitle?: string | null;
+  /** @nullable */
+  ctaTitle?: string | null;
+  /** @nullable */
+  ctaSubtitle?: string | null;
+  /** @nullable */
+  workingHours?: string | null;
+  /** @nullable */
   projectsCompleted?: number | null;
   /** @nullable */
   yearsOfExperience?: number | null;
@@ -257,6 +308,11 @@ export interface CompanyInfoUpdate {
   whatsapp?: string;
   logoUrl?: string;
   mapEmbedUrl?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  workingHours?: string;
   projectsCompleted?: number;
   yearsOfExperience?: number;
   teamMembersCount?: number;

@@ -33,6 +33,8 @@ import type {
   ListContactMessagesParams,
   ListGalleryParams,
   ListProjectsParams,
+  ProcessStep,
+  ProcessStepInput,
   Project,
   ProjectImage,
   ProjectImageInput,
@@ -49,6 +51,8 @@ import type {
   TeamMember,
   TeamMemberInput,
   TeamMemberUpdate,
+  Testimonial,
+  TestimonialInput,
   UploadUrlRequest,
   UploadUrlResponse
 } from './api.schemas';
@@ -2202,6 +2206,586 @@ export const useUpdateCompanyInfo = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateCompanyInfoMutationOptions(options));
+    }
+
+export const getListTestimonialsUrl = () => {
+
+
+
+
+  return `/api/testimonials`
+}
+
+/**
+ * @summary List testimonials
+ */
+export const listTestimonials = async ( options?: RequestInit): Promise<Testimonial[]> => {
+
+  return customFetch<Testimonial[]>(getListTestimonialsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTestimonialsQueryKey = () => {
+    return [
+    `/api/testimonials`
+    ] as const;
+    }
+
+
+export const getListTestimonialsQueryOptions = <TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTestimonialsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTestimonials>>> = ({ signal }) => listTestimonials({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListTestimonialsQueryResult = NonNullable<Awaited<ReturnType<typeof listTestimonials>>>
+export type ListTestimonialsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List testimonials
+ */
+
+export function useListTestimonials<TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListTestimonialsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateTestimonialUrl = () => {
+
+
+
+
+  return `/api/testimonials`
+}
+
+/**
+ * @summary Create a testimonial
+ */
+export const createTestimonial = async (testimonialInput: TestimonialInput, options?: RequestInit): Promise<Testimonial> => {
+
+  return customFetch<Testimonial>(getCreateTestimonialUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      testimonialInput,)
+  }
+);}
+
+
+
+
+export const getCreateTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext> => {
+
+const mutationKey = ['createTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTestimonial>>, {data: BodyType<TestimonialInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createTestimonial(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof createTestimonial>>>
+    export type CreateTestimonialMutationBody = BodyType<TestimonialInput>
+    export type CreateTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a testimonial
+ */
+export const useCreateTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTestimonial>>,
+        TError,
+        {data: BodyType<TestimonialInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTestimonialMutationOptions(options));
+    }
+
+export const getUpdateTestimonialUrl = (id: number,) => {
+
+
+
+
+  return `/api/testimonials/${id}`
+}
+
+/**
+ * @summary Update a testimonial
+ */
+export const updateTestimonial = async (id: number,
+    testimonialInput: TestimonialInput, options?: RequestInit): Promise<Testimonial> => {
+
+  return customFetch<Testimonial>(getUpdateTestimonialUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      testimonialInput,)
+  }
+);}
+
+
+
+
+export const getUpdateTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialInput>}, TContext> => {
+
+const mutationKey = ['updateTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTestimonial>>, {id: number;data: BodyType<TestimonialInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateTestimonial(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof updateTestimonial>>>
+    export type UpdateTestimonialMutationBody = BodyType<TestimonialInput>
+    export type UpdateTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a testimonial
+ */
+export const useUpdateTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTestimonial>>,
+        TError,
+        {id: number;data: BodyType<TestimonialInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateTestimonialMutationOptions(options));
+    }
+
+export const getDeleteTestimonialUrl = (id: number,) => {
+
+
+
+
+  return `/api/testimonials/${id}`
+}
+
+/**
+ * @summary Delete a testimonial
+ */
+export const deleteTestimonial = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteTestimonialUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTestimonial>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteTestimonial(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTestimonial>>>
+
+    export type DeleteTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a testimonial
+ */
+export const useDeleteTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTestimonial>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteTestimonialMutationOptions(options));
+    }
+
+export const getListProcessStepsUrl = () => {
+
+
+
+
+  return `/api/process-steps`
+}
+
+/**
+ * @summary List process steps
+ */
+export const listProcessSteps = async ( options?: RequestInit): Promise<ProcessStep[]> => {
+
+  return customFetch<ProcessStep[]>(getListProcessStepsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListProcessStepsQueryKey = () => {
+    return [
+    `/api/process-steps`
+    ] as const;
+    }
+
+
+export const getListProcessStepsQueryOptions = <TData = Awaited<ReturnType<typeof listProcessSteps>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProcessSteps>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListProcessStepsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProcessSteps>>> = ({ signal }) => listProcessSteps({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProcessSteps>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListProcessStepsQueryResult = NonNullable<Awaited<ReturnType<typeof listProcessSteps>>>
+export type ListProcessStepsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List process steps
+ */
+
+export function useListProcessSteps<TData = Awaited<ReturnType<typeof listProcessSteps>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProcessSteps>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListProcessStepsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateProcessStepUrl = () => {
+
+
+
+
+  return `/api/process-steps`
+}
+
+/**
+ * @summary Create a process step
+ */
+export const createProcessStep = async (processStepInput: ProcessStepInput, options?: RequestInit): Promise<ProcessStep> => {
+
+  return customFetch<ProcessStep>(getCreateProcessStepUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      processStepInput,)
+  }
+);}
+
+
+
+
+export const getCreateProcessStepMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProcessStep>>, TError,{data: BodyType<ProcessStepInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProcessStep>>, TError,{data: BodyType<ProcessStepInput>}, TContext> => {
+
+const mutationKey = ['createProcessStep'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProcessStep>>, {data: BodyType<ProcessStepInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createProcessStep(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateProcessStepMutationResult = NonNullable<Awaited<ReturnType<typeof createProcessStep>>>
+    export type CreateProcessStepMutationBody = BodyType<ProcessStepInput>
+    export type CreateProcessStepMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a process step
+ */
+export const useCreateProcessStep = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProcessStep>>, TError,{data: BodyType<ProcessStepInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createProcessStep>>,
+        TError,
+        {data: BodyType<ProcessStepInput>},
+        TContext
+      > => {
+      return useMutation(getCreateProcessStepMutationOptions(options));
+    }
+
+export const getUpdateProcessStepUrl = (id: number,) => {
+
+
+
+
+  return `/api/process-steps/${id}`
+}
+
+/**
+ * @summary Update a process step
+ */
+export const updateProcessStep = async (id: number,
+    processStepInput: ProcessStepInput, options?: RequestInit): Promise<ProcessStep> => {
+
+  return customFetch<ProcessStep>(getUpdateProcessStepUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      processStepInput,)
+  }
+);}
+
+
+
+
+export const getUpdateProcessStepMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProcessStep>>, TError,{id: number;data: BodyType<ProcessStepInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProcessStep>>, TError,{id: number;data: BodyType<ProcessStepInput>}, TContext> => {
+
+const mutationKey = ['updateProcessStep'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProcessStep>>, {id: number;data: BodyType<ProcessStepInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateProcessStep(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateProcessStepMutationResult = NonNullable<Awaited<ReturnType<typeof updateProcessStep>>>
+    export type UpdateProcessStepMutationBody = BodyType<ProcessStepInput>
+    export type UpdateProcessStepMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a process step
+ */
+export const useUpdateProcessStep = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProcessStep>>, TError,{id: number;data: BodyType<ProcessStepInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateProcessStep>>,
+        TError,
+        {id: number;data: BodyType<ProcessStepInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateProcessStepMutationOptions(options));
+    }
+
+export const getDeleteProcessStepUrl = (id: number,) => {
+
+
+
+
+  return `/api/process-steps/${id}`
+}
+
+/**
+ * @summary Delete a process step
+ */
+export const deleteProcessStep = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteProcessStepUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteProcessStepMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProcessStep>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProcessStep>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteProcessStep'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProcessStep>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteProcessStep(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteProcessStepMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProcessStep>>>
+
+    export type DeleteProcessStepMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a process step
+ */
+export const useDeleteProcessStep = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProcessStep>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteProcessStep>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteProcessStepMutationOptions(options));
     }
 
 export const getSubmitContactUrl = () => {

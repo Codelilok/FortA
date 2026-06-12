@@ -19,6 +19,11 @@ export interface CompanyInfoUpdate {
   whatsapp?: string;
   logoUrl?: string;
   mapEmbedUrl?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  workingHours?: string;
   projectsCompleted?: number;
   yearsOfExperience?: number;
   teamMembersCount?: number;

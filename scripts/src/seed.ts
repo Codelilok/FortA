@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { db, projectsTable, galleryTable, teamMembersTable, servicesTable, socialLinksTable, companyInfoTable, adminsTable } from "@workspace/db";
+import { db, projectsTable, galleryTable, teamMembersTable, servicesTable, socialLinksTable, companyInfoTable, adminsTable, testimonialsTable, processStepsTable } from "@workspace/db";
 
 async function seed() {
   console.log("Seeding database...");
@@ -221,6 +221,33 @@ async function seed() {
     console.log("✓ Admin user seeded — username: fortharchitecture / password: Fortharcitecture@12");
   } else {
     console.log("✓ Admin user already exists");
+  }
+
+  // Testimonials
+  const existingTestimonials = await db.select().from(testimonialsTable).limit(1);
+  if (existingTestimonials.length === 0) {
+    await db.insert(testimonialsTable).values([
+      { quote: "Forth Architecture transformed our vision into a stunning reality. Their attention to detail is unmatched in the industry.", authorName: "Robert Williams", authorRole: "Real Estate Developer", active: true, sortOrder: 0 },
+      { quote: "Working with the team was a seamless experience. From design to construction, they were professional and highly skilled.", authorName: "Elena Petrova", authorRole: "Luxury Homeowner", active: true, sortOrder: 1 },
+      { quote: "The innovative solutions they provided for our commercial project were both aesthetic and cost-effective. Highly recommend.", authorName: "James Chen", authorRole: "CEO, TechPark Hub", active: true, sortOrder: 2 },
+    ]);
+    console.log("✓ Testimonials seeded");
+  } else {
+    console.log("✓ Testimonials already exist");
+  }
+
+  // Process steps
+  const existingSteps = await db.select().from(processStepsTable).limit(1);
+  if (existingSteps.length === 0) {
+    await db.insert(processStepsTable).values([
+      { stepNumber: "01", title: "Consultation", description: "Understanding your goals and requirements in detail.", sortOrder: 0 },
+      { stepNumber: "02", title: "Design", description: "Crafting a bespoke architectural plan that exceeds expectations.", sortOrder: 1 },
+      { stepNumber: "03", title: "Construction", description: "Executing with precision and the highest quality materials.", sortOrder: 2 },
+      { stepNumber: "04", title: "Delivery", description: "Handing over your completed masterpiece, ready to inspire.", sortOrder: 3 },
+    ]);
+    console.log("✓ Process steps seeded");
+  } else {
+    console.log("✓ Process steps already exist");
   }
 
   console.log("✅ Seeding complete!");

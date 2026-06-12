@@ -3,7 +3,17 @@ import { Button } from "@/components/ui/button";
 import { FadeIn } from "./FadeIn";
 import { motion } from "framer-motion";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  title?: string | null;
+  subtitle?: string | null;
+}
+
+export function HeroSection({ title, subtitle }: HeroSectionProps) {
+  const rawTitle = title || "Building Visions, Crafting Excellence";
+  const commaIdx = rawTitle.indexOf(",");
+  const firstLine = commaIdx !== -1 ? rawTitle.slice(0, commaIdx).trim() : rawTitle;
+  const secondLine = commaIdx !== -1 ? rawTitle.slice(commaIdx + 1).trim() : "";
+
   return (
     <section className="relative h-screen min-h-[600px] w-full overflow-hidden flex items-center justify-center">
       {/* Background Image with Overlay */}
@@ -19,14 +29,17 @@ export function HeroSection() {
       <div className="container mx-auto px-4 md:px-6 relative z-10 text-center">
         <FadeIn direction="up">
           <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            Building Visions, <br />
-            <span className="text-secondary">Crafting Excellence</span>
+            {secondLine ? (
+              <>{firstLine}, <br /><span className="text-secondary">{secondLine}</span></>
+            ) : (
+              firstLine
+            )}
           </h1>
         </FadeIn>
 
         <FadeIn direction="up" delay={0.2}>
           <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Professional architecture and construction services tailored to your unique needs. We transform concepts into iconic structures.
+            {subtitle || "Professional architecture and construction services tailored to your unique needs. We transform concepts into iconic structures."}
           </p>
         </FadeIn>
 

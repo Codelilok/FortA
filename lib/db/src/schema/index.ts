@@ -6,3 +6,5 @@ export * from "./social-links";
 export * from "./company";
 export * from "./contact";
 export * from "./admins";
+export * from "./testimonials";
+export * from "./process-steps";

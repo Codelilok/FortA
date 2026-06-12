@@ -1,4 +1,4 @@
-import { useListServices } from "@workspace/api-client-react";
+import { useListServices, useListProcessSteps } from "@workspace/api-client-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { FadeIn } from "@/components/FadeIn";
@@ -21,8 +21,17 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
+const DEFAULT_STEPS = [
+  { id: 0, stepNumber: "01", title: "Consultation", description: "Understanding your goals and requirements in detail.", sortOrder: 0 },
+  { id: 0, stepNumber: "02", title: "Design", description: "Crafting a bespoke architectural plan that exceeds expectations.", sortOrder: 1 },
+  { id: 0, stepNumber: "03", title: "Construction", description: "Executing with precision and the highest quality materials.", sortOrder: 2 },
+  { id: 0, stepNumber: "04", title: "Delivery", description: "Handing over your completed masterpiece, ready to inspire.", sortOrder: 3 },
+];
+
 export default function ServicesPage() {
   const { data: services, isLoading } = useListServices();
+  const { data: processSteps } = useListProcessSteps();
+  const steps = processSteps && processSteps.length > 0 ? processSteps : DEFAULT_STEPS;
 
   const serviceIcons: Record<string, any> = {
     Building2,
@@ -124,18 +133,13 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative">
             <div className="absolute top-24 left-0 w-full h-0.5 bg-white/10 hidden lg:block z-0" />
             
-            {[
-              { step: "01", title: "Consultation", desc: "Understanding your goals and requirements in detail." },
-              { step: "02", title: "Design", desc: "Crafting a bespoke architectural plan that exceeds expectations." },
-              { step: "03", title: "Construction", desc: "Executing with precision and the highest quality materials." },
-              { step: "04", title: "Delivery", desc: "Handing over your completed masterpiece, ready to inspire." },
-            ].map((item, index) => (
-              <FadeIn key={item.step} delay={index * 0.1} className="relative z-10 text-center space-y-6">
+            {steps.map((item, index) => (
+              <FadeIn key={item.id || item.stepNumber} delay={index * 0.1} className="relative z-10 text-center space-y-6">
                 <div className="w-16 h-16 bg-secondary text-primary rounded-full flex items-center justify-center text-xl font-bold mx-auto border-4 border-primary">
-                  {item.step}
+                  {item.stepNumber}
                 </div>
                 <h3 className="text-xl font-bold text-secondary">{item.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed">{item.desc}</p>
+                <p className="text-white/60 text-sm leading-relaxed">{item.description}</p>
               </FadeIn>
             ))}
           </div>

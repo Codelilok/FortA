@@ -2,7 +2,8 @@ import {
   useListProjects, 
   useListServices, 
   useGetDashboardStats,
-  useGetCompanyInfo 
+  useGetCompanyInfo,
+  useListTestimonials,
 } from "@workspace/api-client-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -39,11 +40,21 @@ function Counter({ value }: { value: number }) {
   return <span>{count}</span>;
 }
 
+const DEFAULT_TESTIMONIALS = [
+  { id: 0, quote: "Forth Architecture transformed our vision into a stunning reality. Their attention to detail is unmatched in the industry.", authorName: "Robert Williams", authorRole: "Real Estate Developer", active: true, sortOrder: 0 },
+  { id: 1, quote: "Working with the team was a seamless experience. From design to construction, they were professional and highly skilled.", authorName: "Elena Petrova", authorRole: "Luxury Homeowner", active: true, sortOrder: 1 },
+  { id: 2, quote: "The innovative solutions they provided for our commercial project were both aesthetic and cost-effective. Highly recommend.", authorName: "James Chen", authorRole: "CEO, TechPark Hub", active: true, sortOrder: 2 },
+];
+
 export default function HomePage() {
   const { data: stats } = useGetDashboardStats();
   const { data: featuredProjects } = useListProjects({ featured: true, limit: 3 });
   const { data: services } = useListServices();
   const { data: company } = useGetCompanyInfo();
+  const { data: testimonialsData } = useListTestimonials();
+  const testimonials = testimonialsData && testimonialsData.length > 0
+    ? testimonialsData.filter(t => t.active)
+    : DEFAULT_TESTIMONIALS;
 
   const statItems = [
     { label: "Projects Completed", value: company?.projectsCompleted ?? 120, icon: CheckCircle2 },
@@ -62,7 +73,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <HeroSection />
+      <HeroSection title={company?.heroTitle} subtitle={company?.heroSubtitle} />
 
       {/* Stats Section */}
       <section className="py-20 bg-primary text-white">
@@ -250,36 +261,24 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              {
-                quote: "Forth Architecture transformed our vision into a stunning reality. Their attention to detail is unmatched in the industry.",
-                author: "Robert Williams",
-                role: "Real Estate Developer"
-              },
-              {
-                quote: "Working with the team was a seamless experience. From design to construction, they were professional and highly skilled.",
-                author: "Elena Petrova",
-                role: "Luxury Homeowner"
-              },
-              {
-                quote: "The innovative solutions they provided for our commercial project were both aesthetic and cost-effective. Highly recommend.",
-                author: "James Chen",
-                role: "CEO, TechPark Hub"
-              }
-            ].map((t, index) => (
-              <FadeIn key={index} delay={index * 0.1}>
+            {testimonials.map((t, index) => (
+              <FadeIn key={t.id} delay={index * 0.1}>
                 <div className="space-y-6 p-8 bg-white/5 rounded-2xl relative border border-white/10 hover:border-secondary transition-colors">
                   <div className="text-secondary text-5xl font-serif absolute -top-4 -left-2">“</div>
                   <p className="text-lg italic text-white/80 leading-relaxed relative z-10">
                     {t.quote}
                   </p>
                   <div className="flex items-center gap-4 border-t border-white/10 pt-6">
-                    <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center font-bold text-secondary">
-                      {t.author[0]}
-                    </div>
+                    {t.avatarUrl ? (
+                      <img src={t.avatarUrl} alt={t.authorName} className="w-12 h-12 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center font-bold text-secondary">
+                        {t.authorName[0]}
+                      </div>
+                    )}
                     <div>
-                      <h4 className="font-bold">{t.author}</h4>
-                      <p className="text-sm text-white/50">{t.role}</p>
+                      <h4 className="font-bold">{t.authorName}</h4>
+                      <p className="text-sm text-white/50">{t.authorRole}</p>
                     </div>
                   </div>
                 </div>
@@ -304,10 +303,10 @@ export default function HomePage() {
               />
               <div className="relative z-10 space-y-8 max-w-3xl">
                 <h2 className="text-4xl md:text-6xl font-serif font-bold text-white">
-                  Ready to Start Your <span className="text-secondary">Next Project?</span>
+                  {company?.ctaTitle || "Ready to Start Your Next Project?"}
                 </h2>
                 <p className="text-xl text-white/70">
-                  Join hundreds of satisfied clients and let us build your future together.
+                  {company?.ctaSubtitle || "Join hundreds of satisfied clients and let us build your future together."}
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
                   <Link href="/contact">
