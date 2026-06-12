@@ -20,8 +20,9 @@ import {
   Info, Mail, LogOut, Plus, CheckCircle2, Trash2, Edit, ExternalLink,
   ChevronRight, Menu, X, Star, StarOff, Eye, EyeOff, Globe, Twitter,
   Linkedin, Instagram, Facebook, Youtube, Link2, Phone, MapPin,
-  BarChart3, TrendingUp,
+  BarChart3, TrendingUp, Sofa, Leaf, Compass,
 } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+
+const ADMIN_SERVICE_ICONS: Record<string, any> = {
+  Building2, HardHat: Hammer, Sofa, Map: MapPin, BarChart3, Leaf, Hammer, Compass,
+};
+
+const PLATFORM_ICONS: Record<string, any> = {
+  Facebook, Twitter, Instagram, LinkedIn: Linkedin, YouTube: Youtube, WhatsApp: Phone, Website: Globe,
+};
 
 function SidebarItem({ href, icon: Icon, label, active, badge }: { href: string; icon: any; label: string; active: boolean; badge?: number }) {
   return (
@@ -133,7 +142,7 @@ function ProjectsManagement() {
         onError: () => toast({ title: "Update failed", variant: "destructive" }),
       });
     } else {
-      createProject.mutate(form, {
+      createProject.mutate({ data: form }, {
         onSuccess: () => { toast({ title: "Project created" }); invalidate(); setOpen(false); },
         onError: () => toast({ title: "Create failed", variant: "destructive" }),
       });
@@ -257,7 +266,7 @@ function GalleryManagement() {
         onError: () => toast({ title: "Update failed", variant: "destructive" }),
       });
     } else {
-      createItem.mutate(form, {
+      createItem.mutate({ data: form }, {
         onSuccess: () => { toast({ title: "Photo added" }); invalidate(); setOpen(false); },
         onError: () => toast({ title: "Create failed", variant: "destructive" }),
       });
@@ -362,7 +371,7 @@ function TeamManagement() {
         onError: () => toast({ title: "Update failed", variant: "destructive" }),
       });
     } else {
-      createMember.mutate(form, {
+      createMember.mutate({ data: form }, {
         onSuccess: () => { toast({ title: "Team member added" }); invalidate(); setOpen(false); },
         onError: () => toast({ title: "Create failed", variant: "destructive" }),
       });
@@ -471,7 +480,7 @@ function ServicesManagement() {
         onError: () => toast({ title: "Update failed", variant: "destructive" }),
       });
     } else {
-      createService.mutate(form, {
+      createService.mutate({ data: form }, {
         onSuccess: () => { toast({ title: "Service created" }); invalidate(); setOpen(false); },
         onError: () => toast({ title: "Create failed", variant: "destructive" }),
       });
@@ -491,11 +500,13 @@ function ServicesManagement() {
       <SectionHeader title="Services" onAdd={openCreate} addLabel="Add Service" />
       <div className="space-y-3">
         {isLoading ? Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />) :
-          services?.map((s) => (
+          services?.map((s) => {
+            const SIcon = ADMIN_SERVICE_ICONS[s.icon] || Building2;
+            return (
             <Card key={s.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Hammer size={20} className="text-primary" />
+                  <SIcon size={20} className="text-primary" />
                 </div>
                 <div className="flex-grow min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -510,7 +521,8 @@ function ServicesManagement() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         {!isLoading && !services?.length && (
           <div className="text-center py-16 text-muted-foreground">
             <Hammer size={40} className="mx-auto mb-4 opacity-20" />
@@ -557,8 +569,6 @@ function SocialLinksManagement() {
   const updateLink = useUpdateSocialLink();
   const deleteLink = useDeleteSocialLink();
 
-  const platformIcons: Record<string, any> = { Facebook, Twitter, Instagram, LinkedIn: Linkedin, YouTube: Youtube, WhatsApp: Phone, Website: Globe };
-
   const blank = { platform: "Facebook", url: "" };
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -577,7 +587,7 @@ function SocialLinksManagement() {
         onError: () => toast({ title: "Update failed", variant: "destructive" }),
       });
     } else {
-      createLink.mutate(form, {
+      createLink.mutate({ data: form }, {
         onSuccess: () => { toast({ title: "Link added" }); invalidate(); setOpen(false); },
         onError: () => toast({ title: "Create failed", variant: "destructive" }),
       });
@@ -598,7 +608,7 @@ function SocialLinksManagement() {
       <div className="space-y-3">
         {isLoading ? Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />) :
           links?.map((l) => {
-            const Icon = platformIcons[l.platform] || Link2;
+            const Icon = PLATFORM_ICONS[l.platform] || Link2;
             return (
               <Card key={l.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-5 flex items-center gap-4">
@@ -634,11 +644,20 @@ function SocialLinksManagement() {
             <DialogTitle>{editing ? "Edit Social Link" : "Add Social Link"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div><Label>Platform</Label>
-              <Select value={form.platform} onValueChange={v => setForm({ ...form, platform: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{SOCIAL_PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-              </Select>
+            <div>
+              <Label>Platform</Label>
+              <div className="flex items-center gap-3 mt-1.5">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  {(() => { const PI = PLATFORM_ICONS[form.platform] || Link2; return <PI size={18} className="text-primary" />; })()}
+                </div>
+                <Select value={form.platform} onValueChange={v => setForm({ ...form, platform: v })}>
+                  <SelectTrigger className="flex-grow"><SelectValue /></SelectTrigger>
+                  <SelectContent>{SOCIAL_PLATFORMS.map(p => {
+                    const PI = PLATFORM_ICONS[p] || Link2;
+                    return <SelectItem key={p} value={p}><span className="flex items-center gap-2"><PI size={14} />{p}</span></SelectItem>;
+                  })}</SelectContent>
+                </Select>
+              </div>
             </div>
             <div><Label>URL *</Label><Input value={form.url} onChange={e => setForm({ ...form, url: e.target.value })} placeholder="https://..." /></div>
           </div>
@@ -1019,10 +1038,10 @@ function AdminDashboardContent() {
       {/* Desktop Sidebar — fixed, visible md+ */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 p-5 fixed top-0 left-0 h-full z-30 shadow-sm">
         <div className="flex items-center gap-3 mb-8 px-2">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-lg shrink-0">F</div>
+          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-xl shrink-0">F</div>
           <div className="min-w-0">
-            <h1 className="font-serif font-bold text-sm text-primary leading-none">FORTH ARCHITECTURE</h1>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Admin Panel</p>
+            <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE</h1>
+            <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING & CONSTRUCTION LTD</p>
           </div>
         </div>
         <SidebarContent />
@@ -1034,10 +1053,10 @@ function AdminDashboardContent() {
           <aside className="w-72 bg-white h-full p-5 flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary shrink-0">F</div>
+                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-xl shrink-0">F</div>
                 <div>
-                  <h1 className="font-serif font-bold text-sm text-primary leading-none">FORTH ARCHITECTURE</h1>
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Admin Panel</p>
+                  <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE</h1>
+                  <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING & CONSTRUCTION LTD</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={closeSidebar}><X size={18} /></Button>
@@ -1052,10 +1071,10 @@ function AdminDashboardContent() {
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary shrink-0">F</div>
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-lg shrink-0">F</div>
             <div>
-              <h1 className="font-serif font-bold text-sm text-primary leading-none">FORTH ARCHITECTURE</h1>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Admin Panel</p>
+              <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE</h1>
+              <p className="text-[8px] text-secondary/70 uppercase tracking-wider font-medium">CONSULTING & CONSTRUCTION LTD</p>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setIsMobileSidebarOpen(true)}>

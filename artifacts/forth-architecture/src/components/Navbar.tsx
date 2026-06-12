@@ -56,7 +56,7 @@ export function Navbar() {
               "text-[9px] tracking-widest uppercase transition-colors font-medium",
               isScrolled ? "text-muted-foreground" : "text-white/70"
             )}>
-              Consulting & Construction Ltd
+              CONSULTING & CONSTRUCTION LTD
             </span>
           </div>
         </Link>
