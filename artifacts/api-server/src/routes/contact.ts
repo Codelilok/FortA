@@ -50,4 +50,21 @@ router.patch("/contact/messages/:id/read", async (req, res): Promise<void> => {
   res.json(message);
 });
 
+router.delete("/contact/messages/:id", async (req, res): Promise<void> => {
+  const params = MarkMessageReadParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const [message] = await db
+    .delete(contactMessagesTable)
+    .where(eq(contactMessagesTable.id, params.data.id))
+    .returning();
+  if (!message) {
+    res.status(404).json({ error: "Message not found" });
+    return;
+  }
+  res.sendStatus(204);
+});
+
 export default router;

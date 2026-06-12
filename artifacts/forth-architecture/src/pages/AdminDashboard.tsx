@@ -10,7 +10,7 @@ import {
   useListServices, useCreateService, useUpdateService, useDeleteService,
   useListSocialLinks, useCreateSocialLink, useUpdateSocialLink, useDeleteSocialLink,
   useGetCompanyInfo, useUpdateCompanyInfo,
-  useListContactMessages, useMarkMessageRead,
+  useListContactMessages, useMarkMessageRead, useDeleteContactMessage,
   getListProjectsQueryKey, getListGalleryQueryKey, getListTeamMembersQueryKey,
   getListServicesQueryKey, getListSocialLinksQueryKey, getGetCompanyInfoQueryKey,
   getListContactMessagesQueryKey, getGetDashboardStatsQueryKey,
@@ -771,14 +771,25 @@ function MessagesInbox() {
   const { toast } = useToast();
   const { data: messages, isLoading } = useListContactMessages();
   const markRead = useMarkMessageRead();
+  const deleteMessage = useDeleteContactMessage();
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: getListContactMessagesQueryKey() });
+    qc.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
+  };
 
   const handleMarkRead = (id: number) => {
     markRead.mutate({ id }, {
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: getListContactMessagesQueryKey() });
-        qc.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
-        toast({ title: "Message marked as read" });
-      },
+      onSuccess: () => { invalidate(); toast({ title: "Message marked as read" }); },
+    });
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deleteMessage.mutate({ id: deleteTarget }, {
+      onSuccess: () => { invalidate(); toast({ title: "Message deleted" }); setDeleteTarget(null); },
+      onError: () => toast({ title: "Delete failed", variant: "destructive" }),
     });
   };
 
@@ -828,8 +839,8 @@ function MessagesInbox() {
                         </p>
                       )}
                     </div>
-                    {!msg.isRead && (
-                      <div className="md:ml-4 flex items-start">
+                    <div className="md:ml-4 flex items-start gap-2">
+                      {!msg.isRead && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -839,14 +850,30 @@ function MessagesInbox() {
                         >
                           <CheckCircle2 size={14} className="mr-1" /> Mark Read
                         </Button>
-                      </div>
-                    )}
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-600"
+                        onClick={() => setDeleteTarget(msg.id)}
+                        disabled={deleteMessage.isPending}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))
           )}
       </div>
+
+      <ConfirmDelete
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        name="message"
+      />
     </div>
   );
 }

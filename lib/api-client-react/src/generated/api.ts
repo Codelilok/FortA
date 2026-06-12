@@ -2654,6 +2654,25 @@ export function useGetPublicObject<TData = Awaited<ReturnType<typeof getPublicOb
 
 
 
+export const getDeleteContactMessageUrl = (id: number) => `/api/contact/messages/${id}`;
+
+export const deleteContactMessage = async (id: number, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(getDeleteContactMessageUrl(id), {
+    ...options,
+    method: 'DELETE',
+  });
+};
+
+export const useDeleteContactMessage = (
+  options?: { mutation?: UseMutationOptions<void, ErrorType<unknown>, { id: number }> }
+) => {
+  const { mutation: mutationOptions } = options ?? {};
+  return useMutation<void, ErrorType<unknown>, { id: number }>({
+    mutationFn: ({ id }) => deleteContactMessage(id),
+    ...mutationOptions,
+  });
+};
+
 export const getGetStorageObjectUrl = (objectPath: string,) => {
 
 
