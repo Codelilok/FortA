@@ -697,6 +697,10 @@ function CompanyInfoManagement() {
         address: company.address || "",
         whatsapp: company.whatsapp || "",
         mapEmbedUrl: company.mapEmbedUrl || "",
+        projectsCompleted: company.projectsCompleted ?? 120,
+        yearsOfExperience: company.yearsOfExperience ?? 15,
+        teamMembersCount: company.teamMembersCount ?? 25,
+        awardsWon: company.awardsWon ?? 12,
       });
     }
   }, [company]);
@@ -752,6 +756,31 @@ function CompanyInfoManagement() {
             {form.mapEmbedUrl && (
               <iframe src={form.mapEmbedUrl} className="w-full h-40 rounded-lg border border-border" allowFullScreen loading="lazy" title="Map" />
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="font-serif text-lg">Site Statistics</CardTitle>
+            <CardDescription>Numbers displayed on the homepage stats bar</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <Label>Projects Completed</Label>
+              <Input type="number" min={0} value={form.projectsCompleted ?? 120} onChange={e => setForm({ ...form, projectsCompleted: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Years of Experience</Label>
+              <Input type="number" min={0} value={form.yearsOfExperience ?? 15} onChange={e => setForm({ ...form, yearsOfExperience: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Team Members</Label>
+              <Input type="number" min={0} value={form.teamMembersCount ?? 25} onChange={e => setForm({ ...form, teamMembersCount: Number(e.target.value) })} />
+            </div>
+            <div>
+              <Label>Awards Won</Label>
+              <Input type="number" min={0} value={form.awardsWon ?? 12} onChange={e => setForm({ ...form, awardsWon: Number(e.target.value) })} />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -1036,9 +1065,6 @@ function AdminDashboardContent() {
       </nav>
 
       <div className="mt-auto pt-6 border-t border-slate-100 space-y-3">
-        <Link href="/" className="flex items-center gap-2 px-4 py-2 text-xs text-muted-foreground hover:text-secondary transition-colors">
-          <ExternalLink size={13} /> View public site
-        </Link>
         <div className="flex items-center gap-3 px-4 py-2">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0">
             {username?.[0]?.toUpperCase() || "A"}
@@ -1066,8 +1092,8 @@ function AdminDashboardContent() {
         <div className="flex items-center gap-3 mb-8 px-2">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center font-serif font-black text-secondary text-xl shrink-0">F</div>
           <div className="min-w-0">
-            <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE &amp;</h1>
-            <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">CONSULTING CONSTRUCTION LTD</p>
+            <h1 className="font-serif font-bold text-sm text-primary leading-tight">FORTH ARCHITECTURE CONSULTING</h1>
+            <p className="text-[8px] text-secondary/70 uppercase tracking-wider mt-0.5 font-medium">&amp; CONSTRUCTION LTD</p>
           </div>
         </div>
         <SidebarContent />

@@ -19,4 +19,8 @@ export interface CompanyInfoUpdate {
   whatsapp?: string;
   logoUrl?: string;
   mapEmbedUrl?: string;
+  projectsCompleted?: number;
+  yearsOfExperience?: number;
+  teamMembersCount?: number;
+  awardsWon?: number;
 }

@@ -31,4 +31,12 @@ export interface CompanyInfo {
   logoUrl?: string | null;
   /** @nullable */
   mapEmbedUrl?: string | null;
+  /** @nullable */
+  projectsCompleted?: number | null;
+  /** @nullable */
+  yearsOfExperience?: number | null;
+  /** @nullable */
+  teamMembersCount?: number | null;
+  /** @nullable */
+  awardsWon?: number | null;
 }

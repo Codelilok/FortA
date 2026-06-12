@@ -2429,6 +2429,76 @@ export const useMarkMessageRead = <TError = ErrorType<unknown>,
       return useMutation(getMarkMessageReadMutationOptions(options));
     }
 
+export const getDeleteContactMessageUrl = (id: number,) => {
+
+
+
+
+  return `/api/contact/messages/${id}`
+}
+
+/**
+ * @summary Delete a contact message
+ */
+export const deleteContactMessage = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteContactMessageUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteContactMessageMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContactMessage>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteContactMessage>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteContactMessage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContactMessage>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteContactMessage(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteContactMessageMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContactMessage>>>
+
+    export type DeleteContactMessageMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a contact message
+ */
+export const useDeleteContactMessage = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContactMessage>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteContactMessage>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteContactMessageMutationOptions(options));
+    }
+
 export const getGetDashboardStatsUrl = () => {
 
 
@@ -2653,25 +2723,6 @@ export function useGetPublicObject<TData = Awaited<ReturnType<typeof getPublicOb
 
 
 
-
-export const getDeleteContactMessageUrl = (id: number) => `/api/contact/messages/${id}`;
-
-export const deleteContactMessage = async (id: number, options?: RequestInit): Promise<void> => {
-  return customFetch<void>(getDeleteContactMessageUrl(id), {
-    ...options,
-    method: 'DELETE',
-  });
-};
-
-export const useDeleteContactMessage = (
-  options?: { mutation?: UseMutationOptions<void, ErrorType<unknown>, { id: number }> }
-) => {
-  const { mutation: mutationOptions } = options ?? {};
-  return useMutation<void, ErrorType<unknown>, { id: number }>({
-    mutationFn: ({ id }) => deleteContactMessage(id),
-    ...mutationOptions,
-  });
-};
 
 export const getGetStorageObjectUrl = (objectPath: string,) => {
 

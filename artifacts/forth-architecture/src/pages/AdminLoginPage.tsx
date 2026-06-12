@@ -38,10 +38,10 @@ export default function AdminLoginPage() {
               F
             </div>
             <h1 className="font-serif font-bold text-2xl text-primary text-center leading-tight">
-              FORTH ARCHITECTURE &amp;
+              FORTH ARCHITECTURE CONSULTING
             </h1>
             <p className="text-xs text-muted-foreground uppercase tracking-widest text-center mb-1">
-              CONSULTING CONSTRUCTION LTD
+              &amp; CONSTRUCTION LTD
             </p>
             <p className="text-sm text-muted-foreground mt-2">Admin Dashboard</p>
           </div>

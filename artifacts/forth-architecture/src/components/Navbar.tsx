@@ -53,13 +53,13 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
               "font-serif font-bold text-sm tracking-tight transition-colors",
               solidMode ? "text-primary" : "text-white"
             )}>
-              FORTH ARCHITECTURE &amp;
+              FORTH ARCHITECTURE CONSULTING
             </span>
             <span className={cn(
               "text-[9px] tracking-widest uppercase transition-colors font-medium",
               solidMode ? "text-muted-foreground" : "text-white/70"
             )}>
-              CONSULTING CONSTRUCTION LTD
+              &amp; CONSTRUCTION LTD
             </span>
           </div>
         </Link>
@@ -80,17 +80,6 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
               {link.name}
             </Link>
           ))}
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-secondary",
-                solidMode ? "text-primary" : "text-white"
-              )}
-            >
-              Admin
-            </Link>
-          )}
           <Link href="/contact">
             <Button
               size="sm"
@@ -136,15 +125,6 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
                 {link.name}
               </Link>
             ))}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="text-base font-medium p-3 rounded-xl text-secondary hover:bg-secondary/10 transition-all"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Admin Dashboard
-              </Link>
-            )}
             <div className="pt-2 mt-2 border-t border-border">
               <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button className="w-full bg-primary text-white">Start a Project</Button>

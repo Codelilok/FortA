@@ -675,6 +675,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/ContactMessage"
 
+  /contact/messages/{id}:
+    delete:
+      operationId: deleteContactMessage
+      tags: [contact]
+      summary: Delete a contact message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
   # ── Stats (wow endpoint) ──────────────────────────────────────────────────
   /stats:
     get:
@@ -1162,6 +1177,14 @@ components:
           type: ["string", "null"]
         mapEmbedUrl:
           type: ["string", "null"]
+        projectsCompleted:
+          type: ["integer", "null"]
+        yearsOfExperience:
+          type: ["integer", "null"]
+        teamMembersCount:
+          type: ["integer", "null"]
+        awardsWon:
+          type: ["integer", "null"]
 
     CompanyInfoUpdate:
       type: object
@@ -1190,6 +1213,14 @@ components:
           type: string
         mapEmbedUrl:
           type: string
+        projectsCompleted:
+          type: integer
+        yearsOfExperience:
+          type: integer
+        teamMembersCount:
+          type: integer
+        awardsWon:
+          type: integer
 
     # ── Contact schemas ────────────────────────────────────────────────────
     ContactSubmission:

@@ -46,10 +46,10 @@ export default function HomePage() {
   const { data: company } = useGetCompanyInfo();
 
   const statItems = [
-    { label: "Projects Completed", value: stats?.projectCount || 120, icon: CheckCircle2 },
-    { label: "Years of Experience", value: 15, icon: Building2 },
-    { label: "Team Members", value: stats?.teamCount || 25, icon: Users },
-    { label: "Awards Won", value: 12, icon: Award },
+    { label: "Projects Completed", value: company?.projectsCompleted ?? 120, icon: CheckCircle2 },
+    { label: "Years of Experience", value: company?.yearsOfExperience ?? 15, icon: Building2 },
+    { label: "Team Members", value: company?.teamMembersCount ?? 25, icon: Users },
+    { label: "Awards Won", value: company?.awardsWon ?? 12, icon: Award },
   ];
 
   const serviceIcons: Record<string, any> = {

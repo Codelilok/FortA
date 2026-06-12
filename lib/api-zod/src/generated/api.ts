@@ -499,7 +499,11 @@ export const GetCompanyInfoResponse = zod.object({
   "address": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
-  "mapEmbedUrl": zod.string().nullish()
+  "mapEmbedUrl": zod.string().nullish(),
+  "projectsCompleted": zod.number().nullish(),
+  "yearsOfExperience": zod.number().nullish(),
+  "teamMembersCount": zod.number().nullish(),
+  "awardsWon": zod.number().nullish()
 })
 
 
@@ -518,7 +522,11 @@ export const UpdateCompanyInfoBody = zod.object({
   "address": zod.string().optional(),
   "whatsapp": zod.string().optional(),
   "logoUrl": zod.string().optional(),
-  "mapEmbedUrl": zod.string().optional()
+  "mapEmbedUrl": zod.string().optional(),
+  "projectsCompleted": zod.number().optional(),
+  "yearsOfExperience": zod.number().optional(),
+  "teamMembersCount": zod.number().optional(),
+  "awardsWon": zod.number().optional()
 })
 
 export const UpdateCompanyInfoResponse = zod.object({
@@ -534,7 +542,11 @@ export const UpdateCompanyInfoResponse = zod.object({
   "address": zod.string().nullish(),
   "whatsapp": zod.string().nullish(),
   "logoUrl": zod.string().nullish(),
-  "mapEmbedUrl": zod.string().nullish()
+  "mapEmbedUrl": zod.string().nullish(),
+  "projectsCompleted": zod.number().nullish(),
+  "yearsOfExperience": zod.number().nullish(),
+  "teamMembersCount": zod.number().nullish(),
+  "awardsWon": zod.number().nullish()
 })
 
 
@@ -592,6 +604,14 @@ export const MarkMessageReadResponse = zod.object({
   "message": zod.string(),
   "isRead": zod.boolean(),
   "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a contact message
+ */
+export const DeleteContactMessageParams = zod.object({
+  "id": zod.coerce.number()
 })
 
 

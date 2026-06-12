@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,6 +16,10 @@ export const companyInfoTable = pgTable("company_info", {
   whatsapp: text("whatsapp"),
   logoUrl: text("logo_url"),
   mapEmbedUrl: text("map_embed_url"),
+  projectsCompleted: integer("projects_completed").default(120),
+  yearsOfExperience: integer("years_of_experience").default(15),
+  teamMembersCount: integer("team_members_count").default(25),
+  awardsWon: integer("awards_won").default(12),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
