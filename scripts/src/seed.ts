@@ -216,9 +216,9 @@ async function seed() {
   // Admin user
   const existingAdmin = await db.select().from(adminsTable).limit(1);
   if (existingAdmin.length === 0) {
-    const passwordHash = await bcrypt.hash("forth2024", 10);
-    await db.insert(adminsTable).values({ username: "admin", passwordHash });
-    console.log("✓ Admin user seeded — username: admin / password: forth2024");
+    const passwordHash = await bcrypt.hash("Fortharcitecture@12", 10);
+    await db.insert(adminsTable).values({ username: "fortharchitecture", passwordHash });
+    console.log("✓ Admin user seeded — username: fortharchitecture / password: Fortharcitecture@12");
   } else {
     console.log("✓ Admin user already exists");
   }
