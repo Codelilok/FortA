@@ -32,8 +32,8 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center font-serif font-black text-primary text-xl shrink-0">F</div>
               <div className="flex flex-col">
-                <span className="font-serif font-bold text-base leading-tight tracking-wide">FORTH ARCHITECTURE CONSULTING</span>
-                <span className="text-[10px] tracking-widest uppercase text-white/60">&amp; CONSTRUCTION LTD</span>
+                <span className="font-serif font-bold text-base leading-tight tracking-wide">FORTH ARCHITECTURE &amp;</span>
+                <span className="text-[10px] tracking-widest uppercase text-white/60">CONSULTING CONSTRUCTION LTD</span>
               </div>
             </Link>
             <p className="text-white/70 max-w-xs leading-relaxed">

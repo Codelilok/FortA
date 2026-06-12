@@ -53,13 +53,13 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
               "font-serif font-bold text-sm tracking-tight transition-colors",
               solidMode ? "text-primary" : "text-white"
             )}>
-              FORTH ARCHITECTURE CONSULTING
+              FORTH ARCHITECTURE &amp;
             </span>
             <span className={cn(
               "text-[9px] tracking-widest uppercase transition-colors font-medium",
               solidMode ? "text-muted-foreground" : "text-white/70"
             )}>
-              &amp; CONSTRUCTION LTD
+              CONSULTING CONSTRUCTION LTD
             </span>
           </div>
         </Link>
