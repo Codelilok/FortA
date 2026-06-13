@@ -102,23 +102,7 @@ export default function HomePage() {
       <section className="py-24 overflow-hidden">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col lg:flex-row items-center gap-16">
-            <FadeIn direction="right" className="lg:w-1/2">
-              <div className="relative">
-                <div className="absolute -top-4 -left-4 w-24 h-24 bg-secondary/20 rounded-full blur-2xl" />
-                <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-                <img 
-                  src="https://images.unsplash.com/photo-1503387762-592dee58c460?auto=format&fit=crop&q=80&w=1000" 
-                  alt="Modern Building" 
-                  className="rounded-2xl shadow-2xl relative z-10 w-full object-cover aspect-[4/5]"
-                />
-                <div className="absolute bottom-8 -right-8 bg-white p-8 rounded-xl shadow-xl z-20 hidden md:block border-l-4 border-secondary">
-                  <p className="font-serif text-3xl font-bold text-primary">15+</p>
-                  <p className="text-muted-foreground text-sm uppercase tracking-widest">Years of Craft</p>
-                </div>
-              </div>
-            </FadeIn>
-
-            <FadeIn direction="left" className="lg:w-1/2 space-y-8">
+            <FadeIn direction="up" className="w-full space-y-8">
               <div className="space-y-4">
                 <Badge variant="outline" className="text-secondary border-secondary py-1 px-4 text-xs font-bold uppercase tracking-widest">
                   Our Story
