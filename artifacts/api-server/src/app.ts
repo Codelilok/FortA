@@ -2,6 +2,8 @@ import express, { type Express } from "express";
 import cors from "cors";
 import session from "express-session";
 import pinoHttp from "pino-http";
+import path from "node:path";
+import fs from "node:fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -48,5 +50,17 @@ app.use(
 );
 
 app.use("/api", router);
+
+// Serve the built React frontend in production
+// import.meta.dirname resolves to the bundled file's directory (artifacts/api-server/dist/)
+// so ../../forth-architecture/dist/public is the correct relative path
+const frontendDist = path.resolve(import.meta.dirname, "../../forth-architecture/dist/public");
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  // SPA catch-all: any non-API route returns index.html
+  app.get("/{*path}", (_req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 export default app;
