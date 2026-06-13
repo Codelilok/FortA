@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 
 export const companyInfoTable = pgTable("company_info", {
   id: serial("id").primaryKey(),
-  companyName: text("company_name").notNull().default("Forth Architecture Consulting & Construction Ltd"),
+  companyName: text("company_name").notNull().default("Forth Architecture & Consulting Construction Ltd"),
   slogan: text("slogan"),
   about: text("about"),
   mission: text("mission"),

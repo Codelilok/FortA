@@ -115,7 +115,7 @@ export function Footer() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/50 text-sm">
-          <p>© {new Date().getFullYear()} Forth Architecture Consulting & Construction Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Forth Architecture & Consulting Construction Ltd. All rights reserved.</p>
           <div className="flex gap-8">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>

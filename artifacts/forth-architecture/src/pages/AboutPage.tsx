@@ -71,7 +71,7 @@ export default function AboutPage() {
               ) : (
                 <div className="prose prose-lg text-muted-foreground">
                   <p className="leading-relaxed">
-                    {company?.about || "Founded on the principles of excellence and innovation, Forth Architecture Consulting & Construction Ltd has grown from a boutique design studio into a comprehensive architectural and construction powerhouse. Our journey is defined by the structures we build and the relationships we nurture."}
+                    {company?.about || "Founded on the principles of excellence and innovation, Forth Architecture & Consulting Construction Ltd has grown from a boutique design studio into a comprehensive architectural and construction powerhouse. Our journey is defined by the structures we build and the relationships we nurture."}
                   </p>
                   <p className="leading-relaxed">
                     We believe that architecture is more than just building; it's about creating environments that inspire human potential. Every project we undertake is a unique opportunity to blend aesthetic beauty with functional utility.
