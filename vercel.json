@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm run build:prod",
+  "buildCommand": "pnpm -w run build:prod",
   "outputDirectory": "artifacts/forth-architecture/dist/public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/app" }
