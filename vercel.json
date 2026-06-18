@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "npm install -g pnpm && pnpm install",
   "buildCommand": "pnpm -w run build:prod",
   "outputDirectory": "artifacts/forth-architecture/dist/public",
   "rewrites": [
