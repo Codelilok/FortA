@@ -93,6 +93,20 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
               Start a Project
             </Button>
           </Link>
+          <Link href="/admin">
+            <Button
+              size="sm"
+              variant="outline"
+              className={cn(
+                "font-semibold transition-all text-xs",
+                solidMode
+                  ? "border-primary/30 text-primary hover:bg-primary hover:text-white"
+                  : "border-white/40 text-white hover:bg-white hover:text-primary"
+              )}
+            >
+              Admin
+            </Button>
+          </Link>
         </div>
 
         <button
@@ -125,9 +139,12 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
                 {link.name}
               </Link>
             ))}
-            <div className="pt-2 mt-2 border-t border-border">
+            <div className="pt-2 mt-2 border-t border-border space-y-2">
               <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button className="w-full bg-primary text-white">Start a Project</Button>
+              </Link>
+              <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full border-primary/30 text-primary">Admin Dashboard</Button>
               </Link>
             </div>
           </div>
