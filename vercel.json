@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install -g pnpm && pnpm install",
-  "buildCommand": "pnpm -w run build:prod && mkdir -p public && cp -r artifacts/forth-architecture/dist/public/. public/",
+  "buildCommand": "pnpm -w run build:prod",
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/app" }
