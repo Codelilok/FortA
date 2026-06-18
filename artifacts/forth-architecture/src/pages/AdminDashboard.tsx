@@ -1276,7 +1276,33 @@ function AdminDashboardContent() {
         ))}
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-slate-100 space-y-3">
+      <div className="pt-4 border-t border-slate-100">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-4 mb-2">View Site</p>
+        <div className="space-y-0.5">
+          {[
+            { href: "/", label: "Home" },
+            { href: "/about", label: "About" },
+            { href: "/services", label: "Services" },
+            { href: "/portfolio", label: "Portfolio" },
+            { href: "/gallery", label: "Gallery" },
+            { href: "/team", label: "Team" },
+            { href: "/contact", label: "Contact" },
+          ].map((page) => (
+            <a
+              key={page.href}
+              href={page.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-1.5 text-sm text-muted-foreground hover:text-primary hover:bg-slate-50 rounded-xl transition-colors"
+            >
+              <ExternalLink size={12} className="shrink-0" />
+              {page.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
         <div className="flex items-center gap-3 px-4 py-2">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0">
             {username?.[0]?.toUpperCase() || "A"}
