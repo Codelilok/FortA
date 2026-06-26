@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-const isBuild = process.env.NODE_ENV === "production" || process.argv.includes("build");
+const isBuild = process.argv.includes("build");
 
 const port = Number(process.env.PORT || "5000");
 const basePath = process.env.BASE_PATH || "/";
