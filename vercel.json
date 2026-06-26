@@ -1,8 +1,15 @@
 {
   "version": 2,
   "installCommand": "npm install -g pnpm && pnpm install",
-  "buildCommand": "pnpm -w run build:prod",
-  "outputDirectory": "public",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "public"
+      }
+    }
+  ],
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/app" }
   ],
