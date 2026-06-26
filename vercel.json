@@ -1,9 +1,6 @@
 {
-  "framework": null,
-  "installCommand": "npm install -g pnpm && pnpm install",
   "buildCommand": "pnpm -w run build:prod",
-  "outputDirectory": "public",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/app" }
+    { "source": "/(.*)", "destination": "/api/app" }
   ]
 }
