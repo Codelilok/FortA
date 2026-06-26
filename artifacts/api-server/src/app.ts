@@ -2,7 +2,8 @@ import express, { type Express } from "express";
 import cors from "cors";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import pinoHttp from "pino-http";
+import pinoHttp_ from "pino-http";
+const pinoHttp = (pinoHttp_ as any).default ?? pinoHttp_;
 import path from "path";
 import { fileURLToPath } from "url";
 import router from "./routes";
@@ -18,14 +19,14 @@ app.use(
   pinoHttp({
     logger,
     serializers: {
-      req(req) {
+      req(req: Record<string, any>) {
         return {
           id: req.id,
           method: req.method,
-          url: req.url?.split("?")[0],
+          url: typeof req.url === "string" ? req.url.split("?")[0] : req.url,
         };
       },
-      res(res) {
+      res(res: Record<string, any>) {
         return {
           statusCode: res.statusCode,
         };
