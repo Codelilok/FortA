@@ -33,6 +33,13 @@ projects, project_images, gallery, team_members, services, social_links, company
 
 **How to apply:** When adding catch-all routes, use Express 5 named wildcard syntax and restart the API workflow to verify startup.
 
+## Hosting Gotcha
+- Replit Object Storage is not portable to Vercel without migration; its server client authenticates through a Replit-local sidecar.
+
+**Why:** Vercel serverless functions do not provide Replit's local credential sidecar, so storage-backed admin uploads and object reads will fail there even when the app and database deploy.
+
+**How to apply:** Before a Vercel launch, replace the storage adapter with Vercel Blob, S3, or externally hosted GCS and configure its production credentials and bucket paths.
+
 ## Admin Dashboard Mutation Patterns
 - Create: `useCreateProject().mutate({ ...fields })`
 - Update: `useUpdateProject().mutate({ id, data: { ...fields } })`
