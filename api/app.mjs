@@ -60997,7 +60997,7 @@ app.use(
 app.use("/api", routes_default);
 var publicDir = path.join(process.cwd(), "public");
 app.use(import_express15.default.static(publicDir));
-app.get("*", (_req, res) => {
+app.get("/*splat", (_req, res) => {
   res.sendFile(path.join(publicDir, "index.html"));
 });
 var app_default = app;

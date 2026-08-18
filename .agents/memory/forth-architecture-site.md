@@ -26,6 +26,13 @@ projects, project_images, gallery, team_members, services, social_links, company
 
 **Why:** Upsert for company info avoids null checks everywhere. Direct icon name lookup avoids case mismatch with PascalCase lucide-react component names.
 
+## Runtime Gotcha
+- Express 5 rejects bare wildcard route patterns such as `*`; use a named splat like `/*splat` for SPA fallback routes.
+
+**Why:** `path-to-regexp` 8, used by Express 5, throws during app initialization for unnamed wildcards, preventing the API from listening and causing a preview 502.
+
+**How to apply:** When adding catch-all routes, use Express 5 named wildcard syntax and restart the API workflow to verify startup.
+
 ## Admin Dashboard Mutation Patterns
 - Create: `useCreateProject().mutate({ ...fields })`
 - Update: `useUpdateProject().mutate({ id, data: { ...fields } })`
