@@ -41,9 +41,9 @@ function Counter({ value }: { value: number }) {
 }
 
 const DEFAULT_TESTIMONIALS = [
-  { id: 0, quote: "Forth Architecture transformed our vision into a stunning reality. Their attention to detail is unmatched in the industry.", authorName: "Robert Williams", authorRole: "Real Estate Developer", active: true, sortOrder: 0 },
-  { id: 1, quote: "Working with the team was a seamless experience. From design to construction, they were professional and highly skilled.", authorName: "Elena Petrova", authorRole: "Luxury Homeowner", active: true, sortOrder: 1 },
-  { id: 2, quote: "The innovative solutions they provided for our commercial project were both aesthetic and cost-effective. Highly recommend.", authorName: "James Chen", authorRole: "CEO, TechPark Hub", active: true, sortOrder: 2 },
+  { id: 0, quote: "Forth Architecture transformed our vision into a stunning reality. Their attention to detail is unmatched in the industry.", authorName: "Robert Williams", authorRole: "Real Estate Developer", avatarUrl: undefined, active: true, sortOrder: 0 },
+  { id: 1, quote: "Working with the team was a seamless experience. From design to construction, they were professional and highly skilled.", authorName: "Elena Petrova", authorRole: "Luxury Homeowner", avatarUrl: undefined, active: true, sortOrder: 1 },
+  { id: 2, quote: "The innovative solutions they provided for our commercial project were both aesthetic and cost-effective. Highly recommend.", authorName: "James Chen", authorRole: "CEO, TechPark Hub", avatarUrl: undefined, active: true, sortOrder: 2 },
 ];
 
 export default function HomePage() {

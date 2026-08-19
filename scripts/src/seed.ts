@@ -1,6 +1,17 @@
 import bcrypt from "bcryptjs";
 import { db, projectsTable, galleryTable, teamMembersTable, servicesTable, socialLinksTable, companyInfoTable, adminsTable, testimonialsTable, processStepsTable } from "@workspace/db";
 
+function requireEnvironmentVariable(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} must be set before seeding.`);
+  }
+  return value;
+}
+
+const ADMIN_USERNAME = requireEnvironmentVariable("ADMIN_USERNAME");
+const ADMIN_PASSWORD = requireEnvironmentVariable("ADMIN_PASSWORD");
+
 async function seed() {
   console.log("Seeding database...");
 
@@ -216,9 +227,9 @@ async function seed() {
   // Admin user
   const existingAdmin = await db.select().from(adminsTable).limit(1);
   if (existingAdmin.length === 0) {
-    const passwordHash = await bcrypt.hash("Fortharcitecture@12", 10);
-    await db.insert(adminsTable).values({ username: "fortharchitecture", passwordHash });
-    console.log("✓ Admin user seeded — username: fortharchitecture / password: Fortharcitecture@12");
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+    await db.insert(adminsTable).values({ username: ADMIN_USERNAME, passwordHash });
+    console.log("✓ Admin user seeded");
   } else {
     console.log("✓ Admin user already exists");
   }

@@ -6,6 +6,7 @@ import {
   ListContactMessagesQueryParams,
   MarkMessageReadParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -19,7 +20,7 @@ router.post("/contact", async (req, res): Promise<void> => {
   res.status(201).json(message);
 });
 
-router.get("/contact/messages", async (req, res): Promise<void> => {
+router.get("/contact/messages", requireAdmin, async (req, res): Promise<void> => {
   const parsed = ListContactMessagesQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -32,7 +33,7 @@ router.get("/contact/messages", async (req, res): Promise<void> => {
   res.json(messages);
 });
 
-router.patch("/contact/messages/:id/read", async (req, res): Promise<void> => {
+router.patch("/contact/messages/:id/read", requireAdmin, async (req, res): Promise<void> => {
   const params = MarkMessageReadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -50,7 +51,7 @@ router.patch("/contact/messages/:id/read", async (req, res): Promise<void> => {
   res.json(message);
 });
 
-router.delete("/contact/messages/:id", async (req, res): Promise<void> => {
+router.delete("/contact/messages/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = MarkMessageReadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

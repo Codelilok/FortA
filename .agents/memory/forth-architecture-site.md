@@ -10,7 +10,7 @@ description: Full-stack architecture firm website — stack, schema, key decisio
 - API: Express 5 (artifact: `api-server`, port 8080, base path `/api`)
 - DB: PostgreSQL + Drizzle ORM (`lib/db`)
 - Auth: Clerk whitelabel (`app_3EyybfG0wmc1rlDuKf68aA8O027`) — proxy at `/api/__clerk`
-- Storage: Replit Object Storage
+- Storage: S3-compatible object storage adapter (S3, Cloudflare R2, MinIO, or similar)
 - Fonts: Playfair Display (headings) + Inter (body) via Google Fonts
 - Colors: dark navy `#1a2744` (primary) + warm gold `#c9a84c` (secondary/accent)
 
@@ -34,11 +34,18 @@ projects, project_images, gallery, team_members, services, social_links, company
 **How to apply:** When adding catch-all routes, use Express 5 named wildcard syntax and restart the API workflow to verify startup.
 
 ## Hosting Gotcha
-- Replit Object Storage is not portable to Vercel without migration; its server client authenticates through a Replit-local sidecar.
+- The API now uses S3-compatible object storage rather than Replit Object Storage.
 
-**Why:** Vercel serverless functions do not provide Replit's local credential sidecar, so storage-backed admin uploads and object reads will fail there even when the app and database deploy.
+**Why:** Replit's local object-storage credential sidecar is not available on Render, Vercel, or a VPS.
 
-**How to apply:** Before a Vercel launch, replace the storage adapter with Vercel Blob, S3, or externally hosted GCS and configure its production credentials and bucket paths.
+**How to apply:** Configure S3_BUCKET, S3 credentials, prefixes, and a public base URL in the selected host before testing admin uploads or image reads.
+
+## Production Bootstrap
+- Production requires SESSION_SECRET and uses ADMIN_USERNAME/ADMIN_PASSWORD only during the one-time seed; startup does not reset admin credentials.
+
+**Why:** Startup password synchronization could silently overwrite an existing administrator's password on every restart.
+
+**How to apply:** Apply the schema first, run the seed once with deployment environment variables, and keep the admin password out of source control and logs.
 
 ## Admin Dashboard Mutation Patterns
 - Create: `useCreateProject().mutate({ ...fields })`

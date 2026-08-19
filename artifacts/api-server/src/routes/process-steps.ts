@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, processStepsTable } from "@workspace/db";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -12,7 +13,7 @@ router.get("/process-steps", async (_req, res): Promise<void> => {
   res.json(steps);
 });
 
-router.post("/process-steps", async (req, res): Promise<void> => {
+router.post("/process-steps", requireAdmin, async (req, res): Promise<void> => {
   const { stepNumber, title, description, sortOrder } = req.body;
   if (!stepNumber || !title) {
     res.status(400).json({ error: "stepNumber and title are required" });
@@ -25,7 +26,7 @@ router.post("/process-steps", async (req, res): Promise<void> => {
   res.status(201).json(item);
 });
 
-router.patch("/process-steps/:id", async (req, res): Promise<void> => {
+router.patch("/process-steps/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const { stepNumber, title, description, sortOrder } = req.body;
   const [item] = await db
@@ -37,7 +38,7 @@ router.patch("/process-steps/:id", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.delete("/process-steps/:id", async (req, res): Promise<void> => {
+router.delete("/process-steps/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const [item] = await db.delete(processStepsTable).where(eq(processStepsTable.id, id)).returning();
   if (!item) { res.status(404).json({ error: "Not found" }); return; }

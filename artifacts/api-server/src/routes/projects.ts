@@ -13,6 +13,7 @@ import {
   AddProjectImageBody,
   DeleteProjectImageParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -47,7 +48,7 @@ router.get("/projects", async (req, res): Promise<void> => {
   res.json({ data, total: Number(total), page, limit });
 });
 
-router.post("/projects", async (req, res): Promise<void> => {
+router.post("/projects", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateProjectBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -82,7 +83,7 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
   res.json({ ...project, images });
 });
 
-router.patch("/projects/:id", async (req, res): Promise<void> => {
+router.patch("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -106,7 +107,7 @@ router.patch("/projects/:id", async (req, res): Promise<void> => {
   res.json(project);
 });
 
-router.delete("/projects/:id", async (req, res): Promise<void> => {
+router.delete("/projects/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -138,7 +139,7 @@ router.get("/projects/:id/images", async (req, res): Promise<void> => {
   res.json(images);
 });
 
-router.post("/projects/:id/images", async (req, res): Promise<void> => {
+router.post("/projects/:id/images", requireAdmin, async (req, res): Promise<void> => {
   const params = AddProjectImageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -156,7 +157,7 @@ router.post("/projects/:id/images", async (req, res): Promise<void> => {
   res.status(201).json(image);
 });
 
-router.delete("/project-images/:imageId", async (req, res): Promise<void> => {
+router.delete("/project-images/:imageId", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteProjectImageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

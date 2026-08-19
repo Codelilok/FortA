@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAdminAuth, adminLogout } from "@/lib/auth";
-import { Link, Switch, Route, useLocation } from "wouter";
+import { Link, Switch, Route, Redirect, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetDashboardStats,

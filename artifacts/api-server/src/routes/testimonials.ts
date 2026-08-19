@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, testimonialsTable } from "@workspace/db";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -12,7 +13,7 @@ router.get("/testimonials", async (_req, res): Promise<void> => {
   res.json(testimonials);
 });
 
-router.post("/testimonials", async (req, res): Promise<void> => {
+router.post("/testimonials", requireAdmin, async (req, res): Promise<void> => {
   const { quote, authorName, authorRole, avatarUrl, active, sortOrder } = req.body;
   if (!quote || !authorName) {
     res.status(400).json({ error: "quote and authorName are required" });
@@ -25,7 +26,7 @@ router.post("/testimonials", async (req, res): Promise<void> => {
   res.status(201).json(item);
 });
 
-router.patch("/testimonials/:id", async (req, res): Promise<void> => {
+router.patch("/testimonials/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const { quote, authorName, authorRole, avatarUrl, active, sortOrder } = req.body;
   const [item] = await db
@@ -37,7 +38,7 @@ router.patch("/testimonials/:id", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.delete("/testimonials/:id", async (req, res): Promise<void> => {
+router.delete("/testimonials/:id", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(req.params.id);
   const [item] = await db.delete(testimonialsTable).where(eq(testimonialsTable.id, id)).returning();
   if (!item) { res.status(404).json({ error: "Not found" }); return; }

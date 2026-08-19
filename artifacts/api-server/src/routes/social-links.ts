@@ -7,6 +7,7 @@ import {
   UpdateSocialLinkBody,
   DeleteSocialLinkParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -15,7 +16,7 @@ router.get("/social-links", async (_req, res): Promise<void> => {
   res.json(links);
 });
 
-router.post("/social-links", async (req, res): Promise<void> => {
+router.post("/social-links", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateSocialLinkBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -25,7 +26,7 @@ router.post("/social-links", async (req, res): Promise<void> => {
   res.status(201).json(link);
 });
 
-router.patch("/social-links/:id", async (req, res): Promise<void> => {
+router.patch("/social-links/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateSocialLinkParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -48,7 +49,7 @@ router.patch("/social-links/:id", async (req, res): Promise<void> => {
   res.json(link);
 });
 
-router.delete("/social-links/:id", async (req, res): Promise<void> => {
+router.delete("/social-links/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteSocialLinkParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

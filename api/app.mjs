@@ -59991,7 +59991,32 @@ var db = drizzle(pool, { schema: schema_exports });
 
 // src/routes/auth.ts
 var router2 = (0, import_express2.Router)();
+var LOGIN_WINDOW_MS = 15 * 60 * 1e3;
+var MAX_LOGIN_ATTEMPTS = 10;
+var loginAttempts = /* @__PURE__ */ new Map();
+function getLoginClientKey(req) {
+  return req.ip || req.socket.remoteAddress || "unknown";
+}
+function isLoginRateLimited(key) {
+  const now = Date.now();
+  const attempt = loginAttempts.get(key);
+  if (!attempt || attempt.resetAt <= now) {
+    loginAttempts.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    return false;
+  }
+  attempt.count += 1;
+  return attempt.count > MAX_LOGIN_ATTEMPTS;
+}
+function clearLoginAttempts(key) {
+  loginAttempts.delete(key);
+}
 router2.post("/auth/login", async (req, res) => {
+  const clientKey = getLoginClientKey(req);
+  if (isLoginRateLimited(clientKey)) {
+    res.setHeader("Retry-After", String(Math.ceil(LOGIN_WINDOW_MS / 1e3)));
+    res.status(429).json({ error: "Too many login attempts. Try again later." });
+    return;
+  }
   const { username, password } = req.body ?? {};
   if (!username || !password) {
     res.status(400).json({ error: "Username and password required" });
@@ -60007,6 +60032,7 @@ router2.post("/auth/login", async (req, res) => {
     res.status(401).json({ error: "Invalid username or password" });
     return;
   }
+  clearLoginAttempts(clientKey);
   req.session.adminId = admin.id;
   req.session.adminUsername = admin.username;
   req.session.save((err) => {
@@ -60035,95 +60061,17 @@ var auth_default = router2;
 
 // src/routes/storage.ts
 var import_express3 = __toESM(require_express2(), 1);
-import { Readable as Readable2 } from "stream";
-
-// src/lib/objectStorage.ts
-import { Storage } from "@google-cloud/storage";
 import { Readable } from "stream";
-import { randomUUID } from "crypto";
-
-// src/lib/objectAcl.ts
-var ACL_POLICY_METADATA_KEY = "custom:aclPolicy";
-function isPermissionAllowed(requested, granted) {
-  if (requested === "read" /* READ */) {
-    return ["read" /* READ */, "write" /* WRITE */].includes(granted);
-  }
-  return granted === "write" /* WRITE */;
-}
-function createObjectAccessGroup(group) {
-  switch (group.type) {
-    // Implement per access group type, e.g.:
-    // case "USER_LIST":
-    //   return new UserListAccessGroup(group.id);
-    default:
-      throw new Error(`Unknown access group type: ${group.type}`);
-  }
-}
-async function setObjectAclPolicy(objectFile, aclPolicy) {
-  const [exists2] = await objectFile.exists();
-  if (!exists2) {
-    throw new Error(`Object not found: ${objectFile.name}`);
-  }
-  await objectFile.setMetadata({
-    metadata: {
-      [ACL_POLICY_METADATA_KEY]: JSON.stringify(aclPolicy)
-    }
-  });
-}
-async function getObjectAclPolicy(objectFile) {
-  const [metadata] = await objectFile.getMetadata();
-  const aclPolicy = metadata?.metadata?.[ACL_POLICY_METADATA_KEY];
-  if (!aclPolicy) {
-    return null;
-  }
-  return JSON.parse(aclPolicy);
-}
-async function canAccessObject({
-  userId,
-  objectFile,
-  requestedPermission
-}) {
-  const aclPolicy = await getObjectAclPolicy(objectFile);
-  if (!aclPolicy) {
-    return false;
-  }
-  if (aclPolicy.visibility === "public" && requestedPermission === "read" /* READ */) {
-    return true;
-  }
-  if (!userId) {
-    return false;
-  }
-  if (aclPolicy.owner === userId) {
-    return true;
-  }
-  for (const rule of aclPolicy.aclRules || []) {
-    const accessGroup = createObjectAccessGroup(rule.group);
-    if (await accessGroup.hasMember(userId) && isPermissionAllowed(requestedPermission, rule.permission)) {
-      return true;
-    }
-  }
-  return false;
-}
 
 // src/lib/objectStorage.ts
-var REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
-var objectStorageClient = new Storage({
-  credentials: {
-    audience: "replit",
-    subject_token_type: "access_token",
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: "external_account",
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: "json",
-        subject_token_field_name: "access_token"
-      }
-    },
-    universe_domain: "googleapis.com"
-  },
-  projectId: ""
-});
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { randomUUID } from "node:crypto";
 var ObjectNotFoundError = class _ObjectNotFoundError extends Error {
   constructor() {
     super("Object not found");
@@ -60132,208 +60080,168 @@ var ObjectNotFoundError = class _ObjectNotFoundError extends Error {
   }
 };
 var ObjectStorageService = class {
-  constructor() {
+  client;
+  getBucket() {
+    const bucket = process.env.S3_BUCKET?.trim();
+    if (!bucket) {
+      throw new Error("S3_BUCKET must be set before using object storage.");
+    }
+    return bucket;
   }
-  getPublicObjectSearchPaths() {
-    const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
-    const paths = Array.from(
-      new Set(
-        pathsStr.split(",").map((path2) => path2.trim()).filter((path2) => path2.length > 0)
-      )
-    );
-    if (paths.length === 0) {
+  getPrefix(name) {
+    const value = name === "public" ? process.env.S3_PUBLIC_PREFIX : process.env.S3_PRIVATE_PREFIX;
+    return (value || (name === "public" ? "public" : "objects")).trim().replace(/^\/+|\/+$/g, "");
+  }
+  getClient() {
+    if (this.client) {
+      return this.client;
+    }
+    const region = process.env.S3_REGION || "auto";
+    const endpoint = process.env.S3_ENDPOINT?.trim() || void 0;
+    const accessKeyId = process.env.S3_ACCESS_KEY_ID?.trim();
+    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY?.trim();
+    if (accessKeyId && !secretAccessKey || !accessKeyId && secretAccessKey) {
       throw new Error(
-        "PUBLIC_OBJECT_SEARCH_PATHS not set. Create a bucket in 'Object Storage' tool and set PUBLIC_OBJECT_SEARCH_PATHS env var (comma-separated paths)."
+        "S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY must be provided together."
       );
     }
-    return paths;
+    this.client = new S3Client({
+      region,
+      endpoint,
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+      ...accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {}
+    });
+    return this.client;
   }
-  getPrivateObjectDir() {
-    const dir = process.env.PRIVATE_OBJECT_DIR || "";
-    if (!dir) {
-      throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var."
+  objectKey(prefix, path2) {
+    const normalizedPath = path2.replace(/^\/+/, "").replace(/\.\./g, "");
+    return prefix ? `${prefix}/${normalizedPath}` : normalizedPath;
+  }
+  relativeObjectPath(prefix, key) {
+    const prefixWithSlash = prefix ? `${prefix}/` : "";
+    return key.startsWith(prefixWithSlash) ? key.slice(prefixWithSlash.length) : key;
+  }
+  async headObject(key, isPublic) {
+    try {
+      const metadata = await this.getClient().send(
+        new HeadObjectCommand({
+          Bucket: this.getBucket(),
+          Key: key
+        })
       );
+      return {
+        key,
+        isPublic,
+        contentType: metadata.ContentType,
+        size: metadata.ContentLength
+      };
+    } catch (error40) {
+      const status = error40?.$metadata?.httpStatusCode;
+      const name = error40?.name;
+      if (status === 404 || name === "NotFound" || name === "NoSuchKey") {
+        return null;
+      }
+      throw error40;
     }
-    return dir;
   }
   async searchPublicObject(filePath) {
-    for (const searchPath of this.getPublicObjectSearchPaths()) {
-      const fullPath = `${searchPath}/${filePath}`;
-      const { bucketName, objectName } = parseObjectPath(fullPath);
-      const bucket = objectStorageClient.bucket(bucketName);
-      const file2 = bucket.file(objectName);
-      const [exists2] = await file2.exists();
-      if (exists2) {
-        return file2;
-      }
-    }
-    return null;
+    const key = this.objectKey(this.getPrefix("public"), filePath);
+    return this.headObject(key, true);
   }
-  async downloadObject(file2, cacheTtlSec = 3600) {
-    const [metadata] = await file2.getMetadata();
-    const aclPolicy = await getObjectAclPolicy(file2);
-    const isPublic = aclPolicy?.visibility === "public";
-    const nodeStream = file2.createReadStream();
-    const webStream = Readable.toWeb(nodeStream);
+  async downloadObject(object2, cacheTtlSec = 3600) {
+    const result = await this.getClient().send(
+      new GetObjectCommand({
+        Bucket: this.getBucket(),
+        Key: object2.key
+      })
+    );
+    if (!result.Body) {
+      throw new ObjectNotFoundError();
+    }
     const headers = {
-      "Content-Type": metadata.contentType || "application/octet-stream",
-      "Cache-Control": `${isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`
+      "Content-Type": result.ContentType || object2.contentType || "application/octet-stream",
+      "Cache-Control": `${object2.isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`
     };
-    if (metadata.size) {
-      headers["Content-Length"] = String(metadata.size);
+    const contentLength = result.ContentLength ?? object2.size;
+    if (contentLength !== void 0) {
+      headers["Content-Length"] = String(contentLength);
     }
-    return new Response(webStream, { headers });
+    return new Response(result.Body.transformToWebStream(), { headers });
   }
-  async getObjectEntityUploadURL() {
-    const privateObjectDir = this.getPrivateObjectDir();
-    if (!privateObjectDir) {
-      throw new Error(
-        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' tool and set PRIVATE_OBJECT_DIR env var."
-      );
-    }
-    const objectId = randomUUID();
-    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
-    const { bucketName, objectName } = parseObjectPath(fullPath);
-    return signObjectURL({
-      bucketName,
-      objectName,
-      method: "PUT",
-      ttlSec: 900
-    });
+  async getObjectEntityUploadURL(contentType) {
+    const privatePrefix = this.getPrefix("private");
+    const relativePath = `uploads/${randomUUID()}`;
+    const key = this.objectKey(privatePrefix, relativePath);
+    const uploadURL = await getSignedUrl(
+      this.getClient(),
+      new PutObjectCommand({
+        Bucket: this.getBucket(),
+        Key: key,
+        ...contentType ? { ContentType: contentType } : {}
+      }),
+      { expiresIn: 900 }
+    );
+    return {
+      uploadURL,
+      objectPath: `/objects/${relativePath}`
+    };
   }
   async getObjectEntityFile(objectPath) {
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
-    const parts = objectPath.slice(1).split("/");
-    if (parts.length < 2) {
+    const relativePath = objectPath.slice("/objects/".length);
+    if (!relativePath || relativePath.includes("..")) {
       throw new ObjectNotFoundError();
     }
-    const entityId = parts.slice(1).join("/");
-    let entityDir = this.getPrivateObjectDir();
-    if (!entityDir.endsWith("/")) {
-      entityDir = `${entityDir}/`;
-    }
-    const objectEntityPath = `${entityDir}${entityId}`;
-    const { bucketName, objectName } = parseObjectPath(objectEntityPath);
-    const bucket = objectStorageClient.bucket(bucketName);
-    const objectFile = bucket.file(objectName);
-    const [exists2] = await objectFile.exists();
-    if (!exists2) {
+    const object2 = await this.headObject(
+      this.objectKey(this.getPrefix("private"), relativePath),
+      false
+    );
+    if (!object2) {
       throw new ObjectNotFoundError();
     }
-    return objectFile;
-  }
-  normalizeObjectEntityPath(rawPath) {
-    if (!rawPath.startsWith("https://storage.googleapis.com/")) {
-      return rawPath;
-    }
-    const url2 = new URL(rawPath);
-    const rawObjectPath = url2.pathname;
-    let objectEntityDir = this.getPrivateObjectDir();
-    if (!objectEntityDir.endsWith("/")) {
-      objectEntityDir = `${objectEntityDir}/`;
-    }
-    if (!rawObjectPath.startsWith(objectEntityDir)) {
-      return rawObjectPath;
-    }
-    const entityId = rawObjectPath.slice(objectEntityDir.length);
-    return `/objects/${entityId}`;
-  }
-  async trySetObjectEntityAclPolicy(rawPath, aclPolicy) {
-    const normalizedPath = this.normalizeObjectEntityPath(rawPath);
-    if (!normalizedPath.startsWith("/")) {
-      return normalizedPath;
-    }
-    const objectFile = await this.getObjectEntityFile(normalizedPath);
-    await setObjectAclPolicy(objectFile, aclPolicy);
-    return normalizedPath;
-  }
-  async canAccessObjectEntity({
-    userId,
-    objectFile,
-    requestedPermission
-  }) {
-    return canAccessObject({
-      userId,
-      objectFile,
-      requestedPermission: requestedPermission ?? "read" /* READ */
-    });
+    return object2;
   }
 };
-function parseObjectPath(path2) {
-  if (!path2.startsWith("/")) {
-    path2 = `/${path2}`;
+
+// src/middlewares/requireAdmin.ts
+function requireAdmin(req, res, next) {
+  if (!req.session?.adminId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
   }
-  const pathParts = path2.split("/");
-  if (pathParts.length < 3) {
-    throw new Error("Invalid path: must contain at least a bucket name");
-  }
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
-  return {
-    bucketName,
-    objectName
-  };
-}
-async function signObjectURL({
-  bucketName,
-  objectName,
-  method,
-  ttlSec
-}) {
-  const request = {
-    bucket_name: bucketName,
-    object_name: objectName,
-    method,
-    expires_at: new Date(Date.now() + ttlSec * 1e3).toISOString()
-  };
-  const response = await fetch(
-    `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(request),
-      signal: AbortSignal.timeout(3e4)
-    }
-  );
-  if (!response.ok) {
-    throw new Error(
-      `Failed to sign object URL, errorcode: ${response.status}, make sure you're running on Replit`
-    );
-  }
-  const { signed_url: signedURL } = await response.json();
-  return signedURL;
+  next();
 }
 
 // src/routes/storage.ts
 var router3 = (0, import_express3.Router)();
 var objectStorageService = new ObjectStorageService();
-router3.post("/storage/uploads/request-url", async (req, res) => {
-  const parsed = RequestUploadUrlBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Missing or invalid required fields" });
-    return;
+router3.post(
+  "/storage/uploads/request-url",
+  requireAdmin,
+  async (req, res) => {
+    const parsed = RequestUploadUrlBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Missing or invalid required fields" });
+      return;
+    }
+    try {
+      const { name, size, contentType } = parsed.data;
+      const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL(contentType);
+      res.json(
+        RequestUploadUrlResponse.parse({
+          uploadURL,
+          objectPath,
+          metadata: { name, size, contentType }
+        })
+      );
+    } catch (error40) {
+      req.log.error({ err: error40 }, "Error generating upload URL");
+      res.status(500).json({ error: "Failed to generate upload URL" });
+    }
   }
-  try {
-    const { name, size, contentType } = parsed.data;
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
-    res.json(
-      RequestUploadUrlResponse.parse({
-        uploadURL,
-        objectPath,
-        metadata: { name, size, contentType }
-      })
-    );
-  } catch (error40) {
-    req.log.error({ err: error40 }, "Error generating upload URL");
-    res.status(500).json({ error: "Failed to generate upload URL" });
-  }
-});
+);
 router3.get("/storage/public-objects/*filePath", async (req, res) => {
   try {
     const raw = req.params.filePath;
@@ -60347,7 +60255,7 @@ router3.get("/storage/public-objects/*filePath", async (req, res) => {
     res.status(response.status);
     response.headers.forEach((value, key) => res.setHeader(key, value));
     if (response.body) {
-      const nodeStream = Readable2.fromWeb(response.body);
+      const nodeStream = Readable.fromWeb(response.body);
       nodeStream.pipe(res);
     } else {
       res.end();
@@ -60367,7 +60275,7 @@ router3.get("/storage/objects/*path", async (req, res) => {
     res.status(response.status);
     response.headers.forEach((value, key) => res.setHeader(key, value));
     if (response.body) {
-      const nodeStream = Readable2.fromWeb(response.body);
+      const nodeStream = Readable.fromWeb(response.body);
       nodeStream.pipe(res);
     } else {
       res.end();
@@ -60403,7 +60311,7 @@ router4.get("/projects", async (req, res) => {
   const data = await db.select().from(projectsTable).where(where).orderBy(projectsTable.sortOrder, projectsTable.createdAt).limit(limit).offset((page - 1) * limit);
   res.json({ data, total: Number(total), page, limit });
 });
-router4.post("/projects", async (req, res) => {
+router4.post("/projects", requireAdmin, async (req, res) => {
   const parsed = CreateProjectBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60426,7 +60334,7 @@ router4.get("/projects/:id", async (req, res) => {
   const images = await db.select().from(projectImagesTable).where(eq(projectImagesTable.projectId, params.data.id)).orderBy(projectImagesTable.sortOrder);
   res.json({ ...project, images });
 });
-router4.patch("/projects/:id", async (req, res) => {
+router4.patch("/projects/:id", requireAdmin, async (req, res) => {
   const params = UpdateProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60444,7 +60352,7 @@ router4.patch("/projects/:id", async (req, res) => {
   }
   res.json(project);
 });
-router4.delete("/projects/:id", async (req, res) => {
+router4.delete("/projects/:id", requireAdmin, async (req, res) => {
   const params = DeleteProjectParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60466,7 +60374,7 @@ router4.get("/projects/:id/images", async (req, res) => {
   const images = await db.select().from(projectImagesTable).where(eq(projectImagesTable.projectId, params.data.id)).orderBy(projectImagesTable.sortOrder);
   res.json(images);
 });
-router4.post("/projects/:id/images", async (req, res) => {
+router4.post("/projects/:id/images", requireAdmin, async (req, res) => {
   const params = AddProjectImageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60480,7 +60388,7 @@ router4.post("/projects/:id/images", async (req, res) => {
   const [image] = await db.insert(projectImagesTable).values({ ...parsed.data, projectId: params.data.id }).returning();
   res.status(201).json(image);
 });
-router4.delete("/project-images/:imageId", async (req, res) => {
+router4.delete("/project-images/:imageId", requireAdmin, async (req, res) => {
   const params = DeleteProjectImageParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60508,7 +60416,7 @@ router5.get("/gallery", async (req, res) => {
   const items = category ? await db.select().from(galleryTable).where(eq(galleryTable.category, category)).orderBy(galleryTable.sortOrder) : await db.select().from(galleryTable).orderBy(galleryTable.sortOrder);
   res.json(items);
 });
-router5.post("/gallery", async (req, res) => {
+router5.post("/gallery", requireAdmin, async (req, res) => {
   const parsed = CreateGalleryItemBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60530,7 +60438,7 @@ router5.get("/gallery/:id", async (req, res) => {
   }
   res.json(item);
 });
-router5.patch("/gallery/:id", async (req, res) => {
+router5.patch("/gallery/:id", requireAdmin, async (req, res) => {
   const params = UpdateGalleryItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60548,7 +60456,7 @@ router5.patch("/gallery/:id", async (req, res) => {
   }
   res.json(item);
 });
-router5.delete("/gallery/:id", async (req, res) => {
+router5.delete("/gallery/:id", requireAdmin, async (req, res) => {
   const params = DeleteGalleryItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60570,7 +60478,7 @@ router6.get("/team", async (_req, res) => {
   const members = await db.select().from(teamMembersTable).orderBy(teamMembersTable.sortOrder);
   res.json(members);
 });
-router6.post("/team", async (req, res) => {
+router6.post("/team", requireAdmin, async (req, res) => {
   const parsed = CreateTeamMemberBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60592,7 +60500,7 @@ router6.get("/team/:id", async (req, res) => {
   }
   res.json(member);
 });
-router6.patch("/team/:id", async (req, res) => {
+router6.patch("/team/:id", requireAdmin, async (req, res) => {
   const params = UpdateTeamMemberParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60610,7 +60518,7 @@ router6.patch("/team/:id", async (req, res) => {
   }
   res.json(member);
 });
-router6.delete("/team/:id", async (req, res) => {
+router6.delete("/team/:id", requireAdmin, async (req, res) => {
   const params = DeleteTeamMemberParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60632,7 +60540,7 @@ router7.get("/services", async (_req, res) => {
   const services = await db.select().from(servicesTable).orderBy(servicesTable.sortOrder);
   res.json(services);
 });
-router7.post("/services", async (req, res) => {
+router7.post("/services", requireAdmin, async (req, res) => {
   const parsed = CreateServiceBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60641,7 +60549,7 @@ router7.post("/services", async (req, res) => {
   const [service] = await db.insert(servicesTable).values(parsed.data).returning();
   res.status(201).json(service);
 });
-router7.patch("/services/:id", async (req, res) => {
+router7.patch("/services/:id", requireAdmin, async (req, res) => {
   const params = UpdateServiceParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60659,7 +60567,7 @@ router7.patch("/services/:id", async (req, res) => {
   }
   res.json(service);
 });
-router7.delete("/services/:id", async (req, res) => {
+router7.delete("/services/:id", requireAdmin, async (req, res) => {
   const params = DeleteServiceParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60681,7 +60589,7 @@ router8.get("/social-links", async (_req, res) => {
   const links = await db.select().from(socialLinksTable).orderBy(socialLinksTable.createdAt);
   res.json(links);
 });
-router8.post("/social-links", async (req, res) => {
+router8.post("/social-links", requireAdmin, async (req, res) => {
   const parsed = CreateSocialLinkBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60690,7 +60598,7 @@ router8.post("/social-links", async (req, res) => {
   const [link] = await db.insert(socialLinksTable).values(parsed.data).returning();
   res.status(201).json(link);
 });
-router8.patch("/social-links/:id", async (req, res) => {
+router8.patch("/social-links/:id", requireAdmin, async (req, res) => {
   const params = UpdateSocialLinkParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60708,7 +60616,7 @@ router8.patch("/social-links/:id", async (req, res) => {
   }
   res.json(link);
 });
-router8.delete("/social-links/:id", async (req, res) => {
+router8.delete("/social-links/:id", requireAdmin, async (req, res) => {
   const params = DeleteSocialLinkParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60746,7 +60654,7 @@ router9.get("/company", async (_req, res) => {
   }
   res.json(info);
 });
-router9.patch("/company", async (req, res) => {
+router9.patch("/company", requireAdmin, async (req, res) => {
   const parsed = UpdateCompanyInfoBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60775,7 +60683,7 @@ router10.post("/contact", async (req, res) => {
   const [message] = await db.insert(contactMessagesTable).values(parsed.data).returning();
   res.status(201).json(message);
 });
-router10.get("/contact/messages", async (req, res) => {
+router10.get("/contact/messages", requireAdmin, async (req, res) => {
   const parsed = ListContactMessagesQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60785,7 +60693,7 @@ router10.get("/contact/messages", async (req, res) => {
   const messages = read !== void 0 ? await db.select().from(contactMessagesTable).where(eq(contactMessagesTable.isRead, read)).orderBy(contactMessagesTable.createdAt) : await db.select().from(contactMessagesTable).orderBy(contactMessagesTable.createdAt);
   res.json(messages);
 });
-router10.patch("/contact/messages/:id/read", async (req, res) => {
+router10.patch("/contact/messages/:id/read", requireAdmin, async (req, res) => {
   const params = MarkMessageReadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60798,7 +60706,7 @@ router10.patch("/contact/messages/:id/read", async (req, res) => {
   }
   res.json(message);
 });
-router10.delete("/contact/messages/:id", async (req, res) => {
+router10.delete("/contact/messages/:id", requireAdmin, async (req, res) => {
   const params = MarkMessageReadParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -60847,7 +60755,7 @@ router12.get("/testimonials", async (_req, res) => {
   const testimonials = await db.select().from(testimonialsTable).orderBy(testimonialsTable.sortOrder, testimonialsTable.createdAt);
   res.json(testimonials);
 });
-router12.post("/testimonials", async (req, res) => {
+router12.post("/testimonials", requireAdmin, async (req, res) => {
   const { quote, authorName, authorRole, avatarUrl, active, sortOrder } = req.body;
   if (!quote || !authorName) {
     res.status(400).json({ error: "quote and authorName are required" });
@@ -60856,7 +60764,7 @@ router12.post("/testimonials", async (req, res) => {
   const [item] = await db.insert(testimonialsTable).values({ quote, authorName, authorRole: authorRole || "", avatarUrl, active: active ?? true, sortOrder: sortOrder ?? 0 }).returning();
   res.status(201).json(item);
 });
-router12.patch("/testimonials/:id", async (req, res) => {
+router12.patch("/testimonials/:id", requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const { quote, authorName, authorRole, avatarUrl, active, sortOrder } = req.body;
   const [item] = await db.update(testimonialsTable).set({ quote, authorName, authorRole, avatarUrl, active, sortOrder, updatedAt: /* @__PURE__ */ new Date() }).where(eq(testimonialsTable.id, id)).returning();
@@ -60866,7 +60774,7 @@ router12.patch("/testimonials/:id", async (req, res) => {
   }
   res.json(item);
 });
-router12.delete("/testimonials/:id", async (req, res) => {
+router12.delete("/testimonials/:id", requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const [item] = await db.delete(testimonialsTable).where(eq(testimonialsTable.id, id)).returning();
   if (!item) {
@@ -60884,7 +60792,7 @@ router13.get("/process-steps", async (_req, res) => {
   const steps = await db.select().from(processStepsTable).orderBy(processStepsTable.sortOrder, processStepsTable.createdAt);
   res.json(steps);
 });
-router13.post("/process-steps", async (req, res) => {
+router13.post("/process-steps", requireAdmin, async (req, res) => {
   const { stepNumber, title, description, sortOrder } = req.body;
   if (!stepNumber || !title) {
     res.status(400).json({ error: "stepNumber and title are required" });
@@ -60893,7 +60801,7 @@ router13.post("/process-steps", async (req, res) => {
   const [item] = await db.insert(processStepsTable).values({ stepNumber, title, description: description || "", sortOrder: sortOrder ?? 0 }).returning();
   res.status(201).json(item);
 });
-router13.patch("/process-steps/:id", async (req, res) => {
+router13.patch("/process-steps/:id", requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const { stepNumber, title, description, sortOrder } = req.body;
   const [item] = await db.update(processStepsTable).set({ stepNumber, title, description, sortOrder, updatedAt: /* @__PURE__ */ new Date() }).where(eq(processStepsTable.id, id)).returning();
@@ -60903,7 +60811,7 @@ router13.patch("/process-steps/:id", async (req, res) => {
   }
   res.json(item);
 });
-router13.delete("/process-steps/:id", async (req, res) => {
+router13.delete("/process-steps/:id", requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const [item] = await db.delete(processStepsTable).where(eq(processStepsTable.id, id)).returning();
   if (!item) {
@@ -60983,7 +60891,9 @@ app.use(
       tableName: "user_sessions",
       createTableIfMissing: true
     }),
-    secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
+    secret: process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? (() => {
+      throw new Error("SESSION_SECRET is required in production");
+    })() : "dev-only-session-secret"),
     resave: false,
     saveUninitialized: false,
     cookie: {

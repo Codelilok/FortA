@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, companyInfoTable } from "@workspace/db";
 import { UpdateCompanyInfoBody } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -30,7 +31,7 @@ router.get("/company", async (_req, res): Promise<void> => {
   res.json(info);
 });
 
-router.patch("/company", async (req, res): Promise<void> => {
+router.patch("/company", requireAdmin, async (req, res): Promise<void> => {
   const parsed = UpdateCompanyInfoBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

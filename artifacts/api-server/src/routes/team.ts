@@ -8,6 +8,7 @@ import {
   UpdateTeamMemberBody,
   DeleteTeamMemberParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -16,7 +17,7 @@ router.get("/team", async (_req, res): Promise<void> => {
   res.json(members);
 });
 
-router.post("/team", async (req, res): Promise<void> => {
+router.post("/team", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateTeamMemberBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -40,7 +41,7 @@ router.get("/team/:id", async (req, res): Promise<void> => {
   res.json(member);
 });
 
-router.patch("/team/:id", async (req, res): Promise<void> => {
+router.patch("/team/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateTeamMemberParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -63,7 +64,7 @@ router.patch("/team/:id", async (req, res): Promise<void> => {
   res.json(member);
 });
 
-router.delete("/team/:id", async (req, res): Promise<void> => {
+router.delete("/team/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteTeamMemberParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

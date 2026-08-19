@@ -9,6 +9,7 @@ import {
   UpdateGalleryItemBody,
   DeleteGalleryItemParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/requireAdmin";
 
 const router: IRouter = Router();
 
@@ -25,7 +26,7 @@ router.get("/gallery", async (req, res): Promise<void> => {
   res.json(items);
 });
 
-router.post("/gallery", async (req, res): Promise<void> => {
+router.post("/gallery", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateGalleryItemBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -49,7 +50,7 @@ router.get("/gallery/:id", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.patch("/gallery/:id", async (req, res): Promise<void> => {
+router.patch("/gallery/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateGalleryItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -72,7 +73,7 @@ router.patch("/gallery/:id", async (req, res): Promise<void> => {
   res.json(item);
 });
 
-router.delete("/gallery/:id", async (req, res): Promise<void> => {
+router.delete("/gallery/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteGalleryItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
