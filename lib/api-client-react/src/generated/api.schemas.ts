@@ -373,9 +373,20 @@ export interface UploadUrlRequest {
   contentType: string;
 }
 
+export type UploadUrlResponseUploadMethod = typeof UploadUrlResponseUploadMethod[keyof typeof UploadUrlResponseUploadMethod];
+
+
+export const UploadUrlResponseUploadMethod = {
+  POST: 'POST',
+} as const;
+
+export type UploadUrlResponseUploadFields = {[key: string]: string};
+
 export interface UploadUrlResponse {
   uploadURL: string;
   objectPath: string;
+  uploadMethod?: UploadUrlResponseUploadMethod;
+  uploadFields?: UploadUrlResponseUploadFields;
   metadata?: UploadUrlRequest;
 }
 

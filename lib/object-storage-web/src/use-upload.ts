@@ -10,6 +10,8 @@ interface UploadMetadata {
 interface UploadResponse {
   uploadURL: string;
   objectPath: string;
+  uploadMethod?: "POST" | "PUT";
+  uploadFields?: Record<string, string>;
   metadata: UploadMetadata;
 }
 
@@ -21,11 +23,11 @@ interface UseUploadOptions {
 }
 
 /**
- * React hook for handling file uploads with presigned URLs.
+ * React hook for handling direct image uploads.
  *
  * This hook implements the two-step presigned URL upload flow:
- * 1. Request a presigned URL from your backend (sends JSON metadata, NOT the file)
- * 2. Upload the file directly to the presigned URL
+ * 1. Request signed upload parameters from the backend.
+ * 2. Upload the file directly to Cloudinary.
  *
  * @example
  * ```tsx
@@ -83,19 +85,53 @@ export function useUpload(options: UseUploadOptions = {}) {
     []
   );
 
-  const uploadToPresignedUrl = useCallback(
-    async (file: File, uploadURL: string): Promise<void> => {
-      const response = await fetch(uploadURL, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to upload file to storage");
+  const uploadToStorage = useCallback(
+    async (file: File, uploadResponse: UploadResponse): Promise<UploadResponse> => {
+      const method = uploadResponse.uploadMethod ?? "PUT";
+      let response: Response;
+      if (method === "POST" && uploadResponse.uploadFields) {
+        const formData = new FormData();
+        Object.entries(uploadResponse.uploadFields).forEach(([key, value]) =>
+          formData.append(key, value),
+        );
+        formData.append("file", file);
+        response = await fetch(uploadResponse.uploadURL, {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        response = await fetch(uploadResponse.uploadURL, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+        });
       }
+
+      const uploadResult = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(
+          uploadResult?.error?.message || "Failed to upload image",
+        );
+      }
+
+      if (method === "POST" && typeof uploadResult?.secure_url !== "string") {
+        throw new Error("Image provider did not return a secure image URL");
+      }
+
+      const secureUrl =
+        typeof uploadResult?.secure_url === "string"
+          ? uploadResult.secure_url.replace(
+              "/image/upload/",
+              "/image/upload/f_auto,q_auto/",
+            )
+          : undefined;
+
+      return {
+        ...uploadResponse,
+        objectPath: secureUrl || uploadResponse.objectPath,
+      };
     },
     []
   );
@@ -111,11 +147,11 @@ export function useUpload(options: UseUploadOptions = {}) {
         const uploadResponse = await requestUploadUrl(file);
 
         setProgress(30);
-        await uploadToPresignedUrl(file, uploadResponse.uploadURL);
+        const completedUpload = await uploadToStorage(file, uploadResponse);
 
         setProgress(100);
-        options.onSuccess?.(uploadResponse);
-        return uploadResponse;
+        options.onSuccess?.(completedUpload);
+        return completedUpload;
       } catch (err) {
         const error = err instanceof Error ? err : new Error("Upload failed");
         setError(error);
@@ -125,7 +161,7 @@ export function useUpload(options: UseUploadOptions = {}) {
         setIsUploading(false);
       }
     },
-    [requestUploadUrl, uploadToPresignedUrl, options]
+    [requestUploadUrl, uploadToStorage, options]
   );
 
   const getUploadParameters = useCallback(
@@ -154,9 +190,12 @@ export function useUpload(options: UseUploadOptions = {}) {
 
       const data = await response.json();
       return {
-        method: "PUT",
+        method: data.uploadMethod ?? "PUT",
         url: data.uploadURL,
-        headers: { "Content-Type": file.type || "application/octet-stream" },
+        ...(data.uploadFields ? { fields: data.uploadFields } : {}),
+        ...(data.uploadMethod === "POST"
+          ? {}
+          : { headers: { "Content-Type": file.type || "application/octet-stream" } }),
       };
     },
     []

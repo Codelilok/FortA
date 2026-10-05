@@ -39694,17 +39694,13 @@ var RequestUploadUrlBody = objectType({
 var RequestUploadUrlResponse = objectType({
   "uploadURL": stringType().url(),
   "objectPath": stringType(),
+  "uploadMethod": enumType(["POST"]).optional(),
+  "uploadFields": recordType(stringType(), stringType()).optional(),
   "metadata": objectType({
     "name": stringType().min(1),
     "size": numberType().min(1),
     "contentType": stringType().min(1)
   }).optional()
-});
-var GetPublicObjectParams = objectType({
-  "filePath": coerce.string()
-});
-var GetStorageObjectParams = objectType({
-  "objectPath": coerce.string()
 });
 
 // src/routes/health.ts
@@ -60061,147 +60057,56 @@ var auth_default = router2;
 
 // src/routes/storage.ts
 var import_express3 = __toESM(require_express2(), 1);
-import { Readable } from "stream";
 
-// src/lib/objectStorage.ts
-import {
-  GetObjectCommand,
-  HeadObjectCommand,
-  PutObjectCommand,
-  S3Client
-} from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+// src/lib/cloudinary.ts
+import { createHash } from "node:crypto";
 import { randomUUID } from "node:crypto";
-var ObjectNotFoundError = class _ObjectNotFoundError extends Error {
-  constructor() {
-    super("Object not found");
-    this.name = "ObjectNotFoundError";
-    Object.setPrototypeOf(this, _ObjectNotFoundError.prototype);
+function requiredCloudinaryEnvironmentVariable(name) {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(`${name} must be set before using Cloudinary uploads.`);
   }
-};
-var ObjectStorageService = class {
-  client;
-  getBucket() {
-    const bucket = process.env.S3_BUCKET?.trim();
-    if (!bucket) {
-      throw new Error("S3_BUCKET must be set before using object storage.");
+  return value;
+}
+function createUploadSignature(params, apiSecret) {
+  const serialized = Object.entries(params).sort(([left], [right]) => left.localeCompare(right)).map(([key, value]) => `${key}=${value}`).join("&");
+  return createHash("sha1").update(`${serialized}${apiSecret}`).digest("hex");
+}
+var CloudinaryService = class {
+  getUploadInstructions(contentType) {
+    if (!contentType.startsWith("image/")) {
+      throw new Error("Only image uploads are supported.");
     }
-    return bucket;
-  }
-  getPrefix(name) {
-    const value = name === "public" ? process.env.S3_PUBLIC_PREFIX : process.env.S3_PRIVATE_PREFIX;
-    return (value || (name === "public" ? "public" : "objects")).trim().replace(/^\/+|\/+$/g, "");
-  }
-  getClient() {
-    if (this.client) {
-      return this.client;
-    }
-    const region = process.env.S3_REGION || "auto";
-    const endpoint = process.env.S3_ENDPOINT?.trim() || void 0;
-    const accessKeyId = process.env.S3_ACCESS_KEY_ID?.trim();
-    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY?.trim();
-    if (accessKeyId && !secretAccessKey || !accessKeyId && secretAccessKey) {
-      throw new Error(
-        "S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY must be provided together."
-      );
-    }
-    this.client = new S3Client({
-      region,
-      endpoint,
-      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
-      ...accessKeyId && secretAccessKey ? { credentials: { accessKeyId, secretAccessKey } } : {}
-    });
-    return this.client;
-  }
-  objectKey(prefix, path2) {
-    const normalizedPath = path2.replace(/^\/+/, "").replace(/\.\./g, "");
-    return prefix ? `${prefix}/${normalizedPath}` : normalizedPath;
-  }
-  relativeObjectPath(prefix, key) {
-    const prefixWithSlash = prefix ? `${prefix}/` : "";
-    return key.startsWith(prefixWithSlash) ? key.slice(prefixWithSlash.length) : key;
-  }
-  async headObject(key, isPublic) {
-    try {
-      const metadata = await this.getClient().send(
-        new HeadObjectCommand({
-          Bucket: this.getBucket(),
-          Key: key
-        })
-      );
-      return {
-        key,
-        isPublic,
-        contentType: metadata.ContentType,
-        size: metadata.ContentLength
-      };
-    } catch (error40) {
-      const status = error40?.$metadata?.httpStatusCode;
-      const name = error40?.name;
-      if (status === 404 || name === "NotFound" || name === "NoSuchKey") {
-        return null;
-      }
-      throw error40;
-    }
-  }
-  async searchPublicObject(filePath) {
-    const key = this.objectKey(this.getPrefix("public"), filePath);
-    return this.headObject(key, true);
-  }
-  async downloadObject(object2, cacheTtlSec = 3600) {
-    const result = await this.getClient().send(
-      new GetObjectCommand({
-        Bucket: this.getBucket(),
-        Key: object2.key
-      })
+    const cloudName = requiredCloudinaryEnvironmentVariable(
+      "CLOUDINARY_CLOUD_NAME"
     );
-    if (!result.Body) {
-      throw new ObjectNotFoundError();
-    }
-    const headers = {
-      "Content-Type": result.ContentType || object2.contentType || "application/octet-stream",
-      "Cache-Control": `${object2.isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`
+    const apiKey = requiredCloudinaryEnvironmentVariable(
+      "CLOUDINARY_API_KEY"
+    );
+    const apiSecret = requiredCloudinaryEnvironmentVariable(
+      "CLOUDINARY_API_SECRET"
+    );
+    const folder = process.env.CLOUDINARY_FOLDER?.trim() || "forth-architecture";
+    const publicId = randomUUID();
+    const timestamp2 = String(Math.floor(Date.now() / 1e3));
+    const signedParams = {
+      folder,
+      public_id: publicId,
+      timestamp: timestamp2
     };
-    const contentLength = result.ContentLength ?? object2.size;
-    if (contentLength !== void 0) {
-      headers["Content-Length"] = String(contentLength);
-    }
-    return new Response(result.Body.transformToWebStream(), { headers });
-  }
-  async getObjectEntityUploadURL(contentType) {
-    const privatePrefix = this.getPrefix("private");
-    const relativePath = `uploads/${randomUUID()}`;
-    const key = this.objectKey(privatePrefix, relativePath);
-    const uploadURL = await getSignedUrl(
-      this.getClient(),
-      new PutObjectCommand({
-        Bucket: this.getBucket(),
-        Key: key,
-        ...contentType ? { ContentType: contentType } : {}
-      }),
-      { expiresIn: 900 }
-    );
+    const signature = createUploadSignature(signedParams, apiSecret);
+    const cloudinaryPath = `${folder}/${publicId}`;
+    const encodedCloudName = encodeURIComponent(cloudName);
     return {
-      uploadURL,
-      objectPath: `/objects/${relativePath}`
+      uploadURL: `https://api.cloudinary.com/v1_1/${encodedCloudName}/image/upload`,
+      objectPath: `https://res.cloudinary.com/${encodedCloudName}/image/upload/f_auto,q_auto/${cloudinaryPath}`,
+      uploadMethod: "POST",
+      uploadFields: {
+        ...signedParams,
+        api_key: apiKey,
+        signature
+      }
     };
-  }
-  async getObjectEntityFile(objectPath) {
-    if (!objectPath.startsWith("/objects/")) {
-      throw new ObjectNotFoundError();
-    }
-    const relativePath = objectPath.slice("/objects/".length);
-    if (!relativePath || relativePath.includes("..")) {
-      throw new ObjectNotFoundError();
-    }
-    const object2 = await this.headObject(
-      this.objectKey(this.getPrefix("private"), relativePath),
-      false
-    );
-    if (!object2) {
-      throw new ObjectNotFoundError();
-    }
-    return object2;
   }
 };
 
@@ -60216,7 +60121,7 @@ function requireAdmin(req, res, next) {
 
 // src/routes/storage.ts
 var router3 = (0, import_express3.Router)();
-var objectStorageService = new ObjectStorageService();
+var cloudinaryService = new CloudinaryService();
 router3.post(
   "/storage/uploads/request-url",
   requireAdmin,
@@ -60228,11 +60133,10 @@ router3.post(
     }
     try {
       const { name, size, contentType } = parsed.data;
-      const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL(contentType);
+      const uploadInstructions = cloudinaryService.getUploadInstructions(contentType);
       res.json(
         RequestUploadUrlResponse.parse({
-          uploadURL,
-          objectPath,
+          ...uploadInstructions,
           metadata: { name, size, contentType }
         })
       );
@@ -60242,54 +60146,6 @@ router3.post(
     }
   }
 );
-router3.get("/storage/public-objects/*filePath", async (req, res) => {
-  try {
-    const raw = req.params.filePath;
-    const filePath = Array.isArray(raw) ? raw.join("/") : raw;
-    const file2 = await objectStorageService.searchPublicObject(filePath);
-    if (!file2) {
-      res.status(404).json({ error: "File not found" });
-      return;
-    }
-    const response = await objectStorageService.downloadObject(file2);
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-    if (response.body) {
-      const nodeStream = Readable.fromWeb(response.body);
-      nodeStream.pipe(res);
-    } else {
-      res.end();
-    }
-  } catch (error40) {
-    req.log.error({ err: error40 }, "Error serving public object");
-    res.status(500).json({ error: "Failed to serve public object" });
-  }
-});
-router3.get("/storage/objects/*path", async (req, res) => {
-  try {
-    const raw = req.params.path;
-    const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
-    const objectPath = `/objects/${wildcardPath}`;
-    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
-    const response = await objectStorageService.downloadObject(objectFile);
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-    if (response.body) {
-      const nodeStream = Readable.fromWeb(response.body);
-      nodeStream.pipe(res);
-    } else {
-      res.end();
-    }
-  } catch (error40) {
-    if (error40 instanceof ObjectNotFoundError) {
-      req.log.warn({ err: error40 }, "Object not found");
-      res.status(404).json({ error: "Object not found" });
-      return;
-    }
-    req.log.error({ err: error40 }, "Error serving object");
-    res.status(500).json({ error: "Failed to serve object" });
-  }
-});
 var storage_default = router3;
 
 // src/routes/projects.ts

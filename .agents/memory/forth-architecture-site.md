@@ -47,6 +47,13 @@ projects, project_images, gallery, team_members, services, social_links, company
 
 **How to apply:** Apply the schema first, run the seed once with deployment environment variables, and keep the admin password out of source control and logs.
 
+## User's Hosting Direction
+- Cloudinary is selected for image uploads; Neon PostgreSQL is the user's current database candidate.
+
+**Why:** The user identified Neon as a possible PostgreSQL provider and chose Cloudinary over ImageKit for image storage.
+
+**How to apply:** Keep database access on the standard PostgreSQL DATABASE_URL interface and keep Cloudinary API credentials in deployment secrets.
+
 ## Admin Dashboard Mutation Patterns
 - Create: `useCreateProject().mutate({ ...fields })`
 - Update: `useUpdateProject().mutate({ id, data: { ...fields } })`

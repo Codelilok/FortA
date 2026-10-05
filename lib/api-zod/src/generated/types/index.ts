@@ -43,3 +43,5 @@ export * from './testimonial';
 export * from './testimonialInput';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';
+export * from './uploadUrlResponseUploadFields';
+export * from './uploadUrlResponseUploadMethod';

@@ -790,7 +790,7 @@ export const GetDashboardStatsResponse = zod.object({
 
 
 /**
- * @summary Request a presigned URL for file upload
+ * @summary Request signed Cloudinary upload parameters
  */
 
 
@@ -811,27 +811,13 @@ export const RequestUploadUrlBody = zod.object({
 export const RequestUploadUrlResponse = zod.object({
   "uploadURL": zod.string().url(),
   "objectPath": zod.string(),
+  "uploadMethod": zod.enum(['POST']).optional(),
+  "uploadFields": zod.record(zod.string(), zod.string()).optional(),
   "metadata": zod.object({
   "name": zod.string().min(1),
   "size": zod.number().min(1),
   "contentType": zod.string().min(1)
 }).optional()
-})
-
-
-/**
- * @summary Serve a public asset from PUBLIC_OBJECT_SEARCH_PATHS
- */
-export const GetPublicObjectParams = zod.object({
-  "filePath": zod.coerce.string()
-})
-
-
-/**
- * @summary Serve an object entity
- */
-export const GetStorageObjectParams = zod.object({
-  "objectPath": zod.coerce.string()
 })
 
 

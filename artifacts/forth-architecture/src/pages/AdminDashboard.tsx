@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { ImageUploadField } from "@/components/ImageUploadField";
 
 const ADMIN_SERVICE_ICONS: Record<string, any> = {
   Building2, HardHat: Hammer, Sofa, Map: MapPin, BarChart3, Leaf, Hammer, Compass,
@@ -222,8 +223,12 @@ function ProjectsManagement() {
               <div><Label>Location</Label><Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="e.g. Accra, Ghana" /></div>
               <div><Label>Completion Date</Label><Input value={form.completionDate} onChange={e => setForm({ ...form, completionDate: e.target.value })} placeholder="e.g. 2024" /></div>
             </div>
-            <div><Label>Cover Image URL</Label><Input value={form.coverImage || ""} onChange={e => setForm({ ...form, coverImage: e.target.value })} placeholder="https://..." /></div>
-            {form.coverImage && <img src={form.coverImage} alt="preview" className="w-full h-32 object-cover rounded-lg" />}
+            <ImageUploadField
+              label="Cover image URL"
+              value={form.coverImage || ""}
+              onChange={(coverImage) => setForm({ ...form, coverImage })}
+              previewAlt="Project cover preview"
+            />
             <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
               <SwitchUI checked={form.featured} onCheckedChange={v => setForm({ ...form, featured: v })} />
               <Label className="cursor-pointer">Featured on homepage</Label>
@@ -321,8 +326,14 @@ function GalleryManagement() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-            <div><Label>Image URL *</Label><Input value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." /></div>
-            {form.imageUrl && <img src={form.imageUrl} alt="preview" className="w-full h-40 object-cover rounded-lg" />}
+            <ImageUploadField
+              label="Image URL"
+              value={form.imageUrl}
+              onChange={(imageUrl) => setForm({ ...form, imageUrl })}
+              previewAlt="Gallery image preview"
+              previewClassName="h-40 w-full"
+              required
+            />
             <div><Label>Category</Label>
               <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -434,8 +445,13 @@ function TeamManagement() {
               <div><Label>Full Name *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
               <div><Label>Position / Role *</Label><Input value={form.position} onChange={e => setForm({ ...form, position: e.target.value })} /></div>
             </div>
-            <div><Label>Photo URL</Label><Input value={form.photo} onChange={e => setForm({ ...form, photo: e.target.value })} placeholder="https://..." /></div>
-            {form.photo && <img src={form.photo} alt="preview" className="w-20 h-20 rounded-full object-cover" />}
+            <ImageUploadField
+              label="Photo URL"
+              value={form.photo}
+              onChange={(photo) => setForm({ ...form, photo })}
+              previewAlt="Team member photo preview"
+              previewClassName="h-20 w-20 rounded-full"
+            />
             <div><Label>Bio</Label><Textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} rows={3} /></div>
             <div><Label>Email</Label><Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} type="email" /></div>
             <div className="grid grid-cols-2 gap-4">
@@ -548,7 +564,12 @@ function ServicesManagement() {
                 <SelectContent>{ICON_OPTIONS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label>Image URL (optional)</Label><Input value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://..." /></div>
+            <ImageUploadField
+              label="Image URL (optional)"
+              value={form.imageUrl}
+              onChange={(imageUrl) => setForm({ ...form, imageUrl })}
+              previewAlt="Service image preview"
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -1134,7 +1155,13 @@ function TestimonialsManagement() {
               <div><Label>Author Name *</Label><Input value={form.authorName} onChange={e => setForm({ ...form, authorName: e.target.value })} placeholder="Jane Smith" /></div>
               <div><Label>Author Role</Label><Input value={form.authorRole} onChange={e => setForm({ ...form, authorRole: e.target.value })} placeholder="CEO, Company" /></div>
             </div>
-            <div><Label>Avatar URL</Label><Input value={form.avatarUrl} onChange={e => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." /></div>
+            <ImageUploadField
+              label="Avatar URL"
+              value={form.avatarUrl}
+              onChange={(avatarUrl) => setForm({ ...form, avatarUrl })}
+              previewAlt="Testimonial avatar preview"
+              previewClassName="h-16 w-16 rounded-full"
+            />
             <div className="flex items-center gap-3">
               <SwitchUI checked={form.active} onCheckedChange={v => setForm({ ...form, active: v })} id="active-switch" />
               <Label htmlFor="active-switch">Show on website</Label>
