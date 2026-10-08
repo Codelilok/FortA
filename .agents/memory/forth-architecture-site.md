@@ -47,6 +47,13 @@ projects, project_images, gallery, team_members, services, social_links, company
 
 **How to apply:** Apply the schema first, run the seed once with deployment environment variables, and keep the admin password out of source control and logs.
 
+## PostgreSQL Session Store
+- Provision the `user_sessions` table through Drizzle instead of relying on connect-pg-simple's automatic table creation with modern PostgreSQL.
+
+**Why:** connect-pg-simple 10.0.0's bundled auto-create SQL still includes `WITH (OIDS=FALSE)`, which newer PostgreSQL versions reject; login then fails while saving its session.
+
+**How to apply:** Keep the session table in the Drizzle schema, run the schema push against the external production database before deploying auth changes, and leave runtime table creation disabled.
+
 ## User's Hosting Direction
 - Cloudinary is selected for image uploads; Neon PostgreSQL is the user's current database candidate.
 
