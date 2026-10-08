@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAdminAuth } from "@/lib/auth";
+import { useGetCompanyInfo } from "@workspace/api-client-react";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -21,6 +22,7 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAdmin } = useAdminAuth();
+  const { data: company } = useGetCompanyInfo();
 
   const solidMode = solid || isScrolled;
 
@@ -41,28 +43,38 @@ export function Navbar({ solid = false }: { solid?: boolean }) {
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group shrink-0">
-          <div className="relative">
-            <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center font-serif font-black text-lg transition-all",
-              solidMode ? "bg-primary text-secondary" : "bg-secondary text-primary"
-            )}>
-              F
-            </div>
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className={cn(
-              "font-serif font-bold text-sm tracking-tight transition-colors",
-              solidMode ? "text-primary" : "text-white"
-            )}>
-              FORTH ARCHITECTURE &amp;
-            </span>
-            <span className={cn(
-              "text-[9px] tracking-widest uppercase transition-colors font-medium",
-              solidMode ? "text-muted-foreground" : "text-white/70"
-            )}>
-              CONSULTING CONSTRUCTION LTD
-            </span>
-          </div>
+          {company?.logoUrl ? (
+            <img
+              src={company.logoUrl}
+              alt={`${company.companyName || "Forth Architecture"} logo`}
+              className="h-10 max-w-36 object-contain"
+            />
+          ) : (
+            <>
+              <div className="relative">
+                <div className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center font-serif font-black text-lg transition-all",
+                  solidMode ? "bg-primary text-secondary" : "bg-secondary text-primary"
+                )}>
+                  F
+                </div>
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className={cn(
+                  "font-serif font-bold text-sm tracking-tight transition-colors",
+                  solidMode ? "text-primary" : "text-white"
+                )}>
+                  FORTH ARCHITECTURE &amp;
+                </span>
+                <span className={cn(
+                  "text-[9px] tracking-widest uppercase transition-colors font-medium",
+                  solidMode ? "text-muted-foreground" : "text-white/70"
+                )}>
+                  CONSULTING CONSTRUCTION LTD
+                </span>
+              </div>
+            </>
+          )}
         </Link>
 
         <div className="hidden lg:flex items-center gap-6">

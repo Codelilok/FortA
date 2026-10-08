@@ -711,6 +711,7 @@ function CompanyInfoManagement() {
     if (company) {
       setForm({
         companyName: company.companyName || "",
+        logoUrl: company.logoUrl || "",
         slogan: company.slogan || "",
         about: company.about || "",
         mission: company.mission || "",
@@ -755,6 +756,14 @@ function CompanyInfoManagement() {
           <CardContent className="space-y-4">
             <div><Label>Company Name</Label><Input value={form.companyName || ""} onChange={e => setForm({ ...form, companyName: e.target.value })} /></div>
             <div><Label>Slogan / Tagline</Label><Input value={form.slogan || ""} onChange={e => setForm({ ...form, slogan: e.target.value })} /></div>
+            <ImageUploadField
+              label="Company Logo"
+              value={form.logoUrl || ""}
+              onChange={(logoUrl) => setForm({ ...form, logoUrl })}
+              previewAlt="Company logo preview"
+              previewClassName="h-20 w-48 border border-border bg-white p-2"
+              previewObjectFit="contain"
+            />
             <div><Label>About</Label><Textarea value={form.about || ""} onChange={e => setForm({ ...form, about: e.target.value })} rows={4} /></div>
           </CardContent>
         </Card>

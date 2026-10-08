@@ -11,6 +11,7 @@ type ImageUploadFieldProps = {
   onChange: (url: string) => void;
   previewAlt: string;
   previewClassName?: string;
+  previewObjectFit?: "cover" | "contain";
   required?: boolean;
 };
 
@@ -22,12 +23,15 @@ export function ImageUploadField({
   onChange,
   previewAlt,
   previewClassName = "h-32 w-full",
+  previewObjectFit = "cover",
   required = false,
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const { uploadFile, isUploading, error, progress } = useUpload();
   const inputId = `image-url-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const previewFitClass =
+    previewObjectFit === "contain" ? "object-contain" : "object-cover";
 
   const handleFileChange = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -95,7 +99,7 @@ export function ImageUploadField({
         <img
           src={value}
           alt={previewAlt}
-          className={`${previewClassName} rounded-lg object-cover`}
+          className={`${previewClassName} rounded-lg ${previewFitClass}`}
         />
       )}
     </div>
