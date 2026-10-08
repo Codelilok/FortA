@@ -70,6 +70,7 @@ autoInstallPeers: false
 
 onlyBuiltDependencies:
   - '@swc/core'
+  - '@clerk/shared@3.47.7'
   - esbuild
   - msw
   - unrs-resolver
