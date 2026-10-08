@@ -60033,6 +60033,11 @@ router2.post("/auth/login", async (req, res) => {
   req.session.adminUsername = admin.username;
   req.session.save((err) => {
     if (err) {
+      const sessionError = err;
+      req.log.error(
+        { error: sessionError.message, code: sessionError.code },
+        "Failed to save admin session"
+      );
       res.status(500).json({ error: "Session save failed" });
       return;
     }
